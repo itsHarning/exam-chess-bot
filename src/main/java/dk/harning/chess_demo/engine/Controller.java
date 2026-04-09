@@ -34,6 +34,8 @@ public class Controller implements Initializable {
 	private TextField fenField;
 
 	private Pane paneToMove;
+	private String paneColour = "";
+	private String pieceToMove = "";
 	private int from;
 	private int to;
 
@@ -69,6 +71,33 @@ public class Controller implements Initializable {
 				Pane pane = new Pane();
 
 
+				pane.setOnMousePressed((MouseEvent event) -> {
+					if (paneToMove == null) {
+						System.out.println(pane.getStyle());
+						String[] test = pane.getStyle().split("(?<=;)");
+						System.out.println(Arrays.toString(test));
+
+						if (test.length > 1) {
+							paneColour = test[0];
+							pieceToMove = test[1] + test[2];
+							test[0] = "-fx-background-color: #FF0000;";
+							pane.setStyle(test[0] + test[1] + test[2]);
+						} else {
+							paneToMove = null;
+							return;
+						}
+						paneToMove = pane;
+						from = square;
+
+						System.out.println(paneColour);
+					} else {
+						to = square;
+						pane.setStyle(pane.getStyle() + pieceToMove);
+
+						paneToMove.setStyle(paneColour);
+						paneToMove = null;
+					}
+				});
 
 				String light = "-fx-background-color: #e8ceab;";
 				String dark = "-fx-background-color: #bc7944;";
