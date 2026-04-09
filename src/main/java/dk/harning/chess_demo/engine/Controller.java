@@ -23,7 +23,7 @@ public class Controller implements Initializable {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		this.board = new Board("5r2/q3k3/b1pp4/2n1p1b1/2P1P3/1p1P1Q1P/1P2NPP1/3RK2R w - - 0 1");
+		this.board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	}
 
 	@FXML
@@ -41,8 +41,6 @@ public class Controller implements Initializable {
 				String dark = "-fx-background-color: #bc7944;";
 				String bc = "-fx-background-size: 80 80;" + "-fx-background-position: center;";
 
-				System.out.println("getting pieces: " + pieceImages[piece]);
-
 				if (piece != 0) {
 					if (i % 2 == 0) {
 						if (j % 2 == 0) {
@@ -51,7 +49,6 @@ public class Controller implements Initializable {
 							pane.setStyle(light
 									+ test
 									+ bc);
-							System.out.println(test);
 						} else {
 							// dark
 							pane.setStyle(dark + "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');" + bc);

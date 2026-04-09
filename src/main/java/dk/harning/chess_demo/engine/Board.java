@@ -29,7 +29,6 @@ public class Board {
     // Initialises the board to the positions represented by the FEN string.
     public Board(String fen) {
         this.board = new Fen().parseFenString(fen);
-        // this.getKingSquares();
         this.colour = WHITE;
     }
 }
