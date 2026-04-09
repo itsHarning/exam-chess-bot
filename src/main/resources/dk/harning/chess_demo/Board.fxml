@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="3.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml1"
+      fx:controller="dk.harning.chess_demo.engine.Controller">
+    <padding>
+        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0"/>
+    </padding>
+
+    <GridPane fx:id="grid">
+      <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0"/>
+      </columnConstraints>
+      <rowConstraints>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+          <RowConstraints prefHeight="100.0" vgrow="SOMETIMES"/>
+      </rowConstraints>
+    </GridPane>
+    <Button fx:id="start" onAction="#initBoard" text="Start"/>
+</VBox>
