@@ -12,7 +12,7 @@ public class GUI extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUI.class.getResource("board.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 600, 600);
+        Scene scene = new Scene(fxmlLoader.load(), 1150, 640);
         stage.getIcons().add(new Image(getClass().getResource("/images/icon.png").toExternalForm()));
         stage.setTitle("Chess!");
         stage.setScene(scene);

@@ -11,7 +11,6 @@ public class Fen {
     public int[] parseFenString(String fenString) {
         this.board = boardEmpty;
         String[] split = fenString.split("\\s+");
-        System.out.println(Arrays.toString(split));
         String fen = split[0];
 
         int count = 0;

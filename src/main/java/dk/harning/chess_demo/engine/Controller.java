@@ -2,10 +2,22 @@ package dk.harning.chess_demo.engine;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 
+import java.util.Arrays;
+import java.util.Random;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -18,17 +30,36 @@ public class Controller implements Initializable {
 	private GridPane grid;
 	@FXML
 	private Button start;
+	@FXML
+	private TextField fenField;
+
+	private Pane paneToMove;
+	private int from;
+	private int to;
 
 	private Board board;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		this.board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		this.board = new Board();
+
+		initBoard();
+	}
+
+	@FXML
+	public void getFen() {
+		System.out.println(fenField.getText());
+		String fenString = fenField.getText();
+		// Example fen string
+		// 5r2/q3k3/b1pp4/2n1p1b1/2P1P3/1p1P1Q1P/1P2NPP1/3RK2R w - - 0 1
+		this.board = new Board(fenString);
+
+		initBoard();
 	}
 
 	@FXML
 	public void initBoard() {
-		start.setVisible(false);
+		// start.setVisible(false);
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				int[] board = this.board.board;
@@ -36,6 +67,8 @@ public class Controller implements Initializable {
 				int piece = board[square];
 
 				Pane pane = new Pane();
+
+
 
 				String light = "-fx-background-color: #e8ceab;";
 				String dark = "-fx-background-color: #bc7944;";
