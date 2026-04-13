@@ -3,21 +3,12 @@ package dk.harning.chess_demo.engine;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 
-import java.util.Arrays;
-import java.util.Random;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -29,7 +20,7 @@ public class Controller implements Initializable {
 	@FXML
 	private GridPane grid;
 	@FXML
-	private Button start;
+	private Button fromFEN;
 	@FXML
 	private TextField fenField;
 
@@ -49,7 +40,7 @@ public class Controller implements Initializable {
 	}
 
 	@FXML
-	public void getFen() {
+	public void FENToBoard() {
 		System.out.println(fenField.getText());
 		String fenString = fenField.getText();
 		// Example fen string
@@ -57,6 +48,11 @@ public class Controller implements Initializable {
 		this.board = new Board(fenString);
 
 		initBoard();
+	}
+
+	@FXML
+	public void boardToFEN() {
+		// TODO: get fen string from current board
 	}
 
 	@FXML
@@ -70,32 +66,38 @@ public class Controller implements Initializable {
 
 				Pane pane = new Pane();
 
-
 				pane.setOnMousePressed((MouseEvent event) -> {
-					if (paneToMove == null) {
-						System.out.println(pane.getStyle());
-						String[] test = pane.getStyle().split("(?<=;)");
-						System.out.println(Arrays.toString(test));
+					if (event.getButton() == MouseButton.PRIMARY) {
+						if (paneToMove == null) {
+							// System.out.println(pane.getStyle());
+							String[] splitCSS = pane.getStyle().split("(?<=;)");
+							// System.out.println(Arrays.toString(splitCSS));
 
-						if (test.length > 1) {
-							paneColour = test[0];
-							pieceToMove = test[1] + test[2];
-							test[0] = "-fx-background-color: #FF0000;";
-							pane.setStyle(test[0] + test[1] + test[2]);
+							if (splitCSS.length > 1) {
+								paneColour = splitCSS[0];
+								pieceToMove = splitCSS[1] + splitCSS[2];
+								splitCSS[0] = "-fx-background-color: #FF0000;";
+								pane.setStyle(splitCSS[0] + splitCSS[1] + splitCSS[2]);
+							} else {
+								paneToMove = null;
+								return;
+							}
+							paneToMove = pane;
+							from = square;
+
+							System.out.println(from);
+
+							// System.out.println(paneColour);
 						} else {
+							to = square;
+
+							System.out.println(to);
+
+							pane.setStyle(pane.getStyle() + pieceToMove);
+
+							paneToMove.setStyle(paneColour);
 							paneToMove = null;
-							return;
 						}
-						paneToMove = pane;
-						from = square;
-
-						System.out.println(paneColour);
-					} else {
-						to = square;
-						pane.setStyle(pane.getStyle() + pieceToMove);
-
-						paneToMove.setStyle(paneColour);
-						paneToMove = null;
 					}
 				});
 
@@ -107,19 +109,30 @@ public class Controller implements Initializable {
 					if (i % 2 == 0) {
 						if (j % 2 == 0) {
 							// light
-							String test = "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');";
 							pane.setStyle(light
-									+ test
+									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
 									+ bc);
 						} else {
 							// dark
-							pane.setStyle(dark + "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');" + bc);
+							pane.setStyle(
+									dark
+									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
+									+ bc
+							);
 						}
 					} else {
 						if (j % 2 != 0) {
-							pane.setStyle(light + "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');" + bc);
+							pane.setStyle(
+									light
+									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
+									+ bc
+							);
 						} else {
-							pane.setStyle(dark + "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');" + bc);
+							pane.setStyle(
+									dark
+									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
+									+ bc
+							);
 						}
 					}
 				} else {

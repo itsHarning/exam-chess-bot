@@ -31,17 +31,15 @@
           <RowConstraints prefHeight="100.0" vgrow="SOMETIMES" />
       </rowConstraints>
     </GridPane>
-   <VBox prefHeight="200.0" prefWidth="500.0">
-      <children>
-         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-            <children>
-               <TextField fx:id="fenField" prefHeight="25.0" prefWidth="400.0" text="FEN">
-                  <HBox.margin>
-                     <Insets right="5.0" />
-                  </HBox.margin></TextField>
-                <Button fx:id="start" onAction="#getFen" text="Start" />
-            </children>
-         </HBox>
-      </children>
-   </VBox>
+    <VBox prefHeight="200.0" prefWidth="500.0">
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+            <TextField fx:id="fenField" prefHeight="25.0" prefWidth="400.0" text="FEN">
+                <HBox.margin>
+                    <Insets right="5.0"/>
+                </HBox.margin>
+            </TextField>
+            <Button fx:id="fromFEN" onAction="#FENToBoard" text="Load FEN"/>
+        </HBox>
+        <Button fx:id="toFEN" onAction="#boardToFEN" text="Get FEN"/>
+    </VBox>
 </HBox>
