@@ -36,7 +36,7 @@ public class Bot {
 
         int movesFound = 0; //Counting variable let's us access the index on the array we have reached
 
-        for(int move: Pawn.getPawnMoves()){
+        for(int move: Pawn.getMoves()){
             if (move != 0){
                 possibleMoves[movesFound] = move;
                 movesFound ++;
