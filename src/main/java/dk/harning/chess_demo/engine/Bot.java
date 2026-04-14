@@ -1,6 +1,7 @@
 package dk.harning.chess_demo.engine;
 
 import dk.harning.chess_demo.engine.pieces.Pawn;
+import dk.harning.chess_demo.engine.pieces.Rook;
 
 public class Bot {
 
@@ -26,25 +27,19 @@ public class Bot {
         totalMoves = gameState.getTotalMoves();
         halfMoveClock = gameState.getHalfMoveClock();
 
-        int[] possibleMoves = getAllMoves();
+        int[][] possibleMoves = new int[64][256];
+        getAllMoves(possibleMoves, 0);
 
         return "Not finished yet";
     }
 
-    static int[] getAllMoves(){
-        int[] possibleMoves = new int[218];
+    static void getAllMoves(int[][] buffer, int depth){
 
-        int movesFound = 0; //Counting variable let's us access the index on the array we have reached
-
-        for(int move: Pawn.getMoves()){
-            if (move != 0){
-                possibleMoves[movesFound] = move;
-                movesFound ++;
-            }
-        }
+        int counter = 0; //Counting variable lets us access the index on the array we have reached
+        counter = Pawn.getMoves(currentBoard, buffer[depth], counter, isWhiteToMove);
 
 
-        return new int[]{1};
+
     }
 
 }
