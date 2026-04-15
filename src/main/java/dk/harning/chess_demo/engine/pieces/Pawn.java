@@ -3,7 +3,7 @@ package dk.harning.chess_demo.engine.pieces;
 import dk.harning.chess_demo.engine.Board;
 import dk.harning.chess_demo.engine.IntegerEncoder;
 
-abstract public class Pawn {
+abstract public class   Pawn {
     public static int getMoves(int[] board, int[] buffer, int counter, boolean isWhite){
 
         int piecNr = 1;
