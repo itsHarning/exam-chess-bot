@@ -1,6 +1,7 @@
 module dk.harning.chess_demo {
     requires javafx.controls;
     requires javafx.fxml;
+    requires dk.harning.chess_demo;
     //requires dk.harning.chess_demo;
     //requires dk.harning.chess_demo;
 
