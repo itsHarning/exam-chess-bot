@@ -15,6 +15,18 @@ public class GameState {
         //Set variables by interpreting FEN string
     }
 
+    public GameState(){
+        this.board = Board.getFreshBoard();
+        this.blackCastleKingSide = true;
+        this.blackCastleQueenSide = true;
+        this.whiteCastleKingSide = true;
+        this.whiteCastleQueenSide = true;
+        this.isWhiteToMove = true;
+        this.enPassantIndex = 0;
+        this.totalMoves = 0;
+        this.halfMoveClock = 0;
+    }
+
     public int[] getCurrentBoard() {
         return board;
     }
