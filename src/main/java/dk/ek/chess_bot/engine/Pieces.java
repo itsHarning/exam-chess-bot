@@ -14,14 +14,14 @@ public class Pieces {
     public static final int WKING = 6;
 
     // Black pieces
-    public static final int BPAWN = 7;
-    public static final int BKNIGHT = 8;
-    public static final int BBISHOP = 9;
-    public static final int BROOK = 10;
-    public static final int BQUEEN = 11;
-    public static final int BKING = 12;
+    public static final int BPAWN = 9;
+    public static final int BKNIGHT = 10;
+    public static final int BBISHOP = 11;
+    public static final int BROOK = 12;
+    public static final int BQUEEN = 13;
+    public static final int BKING = 14;
 
-    public static final String[] pieceImages = { ".", "wP.png", "wN.png", "wB.png", "wR.png", "wQ.png", "wK.png",
+    public static final String[] pieceImages = { ".", "wP.png", "wN.png", "wB.png", "wR.png", "wQ.png", "wK.png", "", "",
             "bP.png", "bN.png", "bB.png", "bR.png", "bQ.png", "bK.png" };
 
     public static final String pieces = ".PNBRQKpnbrqk";

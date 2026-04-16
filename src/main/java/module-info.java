@@ -1,4 +1,4 @@
-module dk.harning.chess_demo {
+module dk.ek.chess_bot {
     requires javafx.controls;
     requires javafx.fxml;
 

@@ -61,8 +61,11 @@ public class Controller implements Initializable {
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				int[] board = this.board.board;
+				System.out.println("(" + i + ", " + j + ")");
 				int square = convert0x88(i, j);
+				System.out.println(square);
 				int piece = board[square];
+				System.out.println(piece);
 
 				Pane pane = new Pane();
 
