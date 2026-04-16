@@ -1,6 +1,6 @@
-package dk.harning.chess_demo.engine.pieces;
+package dk.ek.chess_bot.engine.pieces;
 
-public class Knight {
+public class Queen {
 
     public static int[] getMoves(){
         return new int[1];

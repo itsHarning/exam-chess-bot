@@ -1,7 +1,7 @@
-package dk.harning.chess_demo.engine.pieces;
+package dk.ek.chess_bot.engine.pieces;
 
-import dk.harning.chess_demo.engine.Board;
-import dk.harning.chess_demo.engine.IntegerEncoder;
+import dk.ek.chess_bot.engine.Board;
+import dk.ek.chess_bot.engine.IntegerEncoder;
 
 abstract public class Pawn {
     public static int getMoves(int[] board, int[] buffer, int counter, boolean isWhite){
