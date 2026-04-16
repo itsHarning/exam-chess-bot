@@ -4,7 +4,6 @@ import dk.harning.chess_demo.engine.pieces.Pawn;
 import dk.harning.chess_demo.engine.pieces.Rook;
 
 public class Bot {
-
     static int[] currentBoard;
     static boolean blackCastleKingSide;
     static boolean blackCastleQueenSide;
