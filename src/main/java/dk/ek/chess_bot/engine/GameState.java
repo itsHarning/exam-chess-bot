@@ -1,4 +1,4 @@
-package dk.harning.chess_demo.engine;
+package dk.ek.chess_bot.engine;
 
 public class GameState {
     private int[] board;

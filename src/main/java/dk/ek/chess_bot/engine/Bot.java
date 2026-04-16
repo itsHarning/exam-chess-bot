@@ -1,7 +1,6 @@
-package dk.harning.chess_demo.engine;
+package dk.ek.chess_bot.engine;
 
-import dk.harning.chess_demo.engine.pieces.Pawn;
-import dk.harning.chess_demo.engine.pieces.Rook;
+import dk.ek.chess_bot.engine.pieces.Pawn;
 
 public class Bot {
 

@@ -1,11 +1,11 @@
-package dk.harning.chess_demo.engine.pieces;
+package dk.ek.chess_bot.engine.pieces;
 
-import dk.harning.chess_demo.engine.IntegerEncoder;
+import dk.ek.chess_bot.engine.IntegerEncoder;
 
-public class Rook {
+public class Queen {
 
     private static final int[] ROOK_DIRECTION = {
-            16, 1, -16, -1
+            16, 1, -16, -1, 15, 17, -15, -17
     };
 
     public static int getMoves(int[] board, int[] buffer, int counter, boolean isWhite){

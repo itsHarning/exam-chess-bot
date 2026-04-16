@@ -1,12 +1,12 @@
-module dk.harning.chess_demo {
+module dk.ek.chess_bot {
     requires javafx.controls;
     requires javafx.fxml;
-    //requires dk.harning.chess_demo;
-    //requires dk.harning.chess_demo;
-    //requires dk.harning.chess_demo;
+    //requires dk.ek.chess_bot;
+    //requires dk.ek.chess_bot;
+    //requires dk.ek.chess_bot;
 
-    opens dk.harning.chess_demo.engine to javafx.fxml;
-    exports dk.harning.chess_demo.engine;
-    exports dk.harning.chess_demo;
-    opens dk.harning.chess_demo to javafx.fxml;
+    opens dk.ek.chess_bot.engine to javafx.fxml;
+    exports dk.ek.chess_bot.engine;
+    exports dk.ek.chess_bot;
+    opens dk.ek.chess_bot to javafx.fxml;
 }

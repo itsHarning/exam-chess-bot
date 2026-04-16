@@ -1,6 +1,6 @@
-package dk.harning.chess_demo.engine.pieces;
+package dk.ek.chess_bot.engine.pieces;
 
-import dk.harning.chess_demo.engine.IntegerEncoder;
+import dk.ek.chess_bot.engine.IntegerEncoder;
 
 public class Bishop {
 

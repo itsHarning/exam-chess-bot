@@ -1,28 +1,17 @@
-package dk.harning.chess_demo.engine;
+package dk.ek.chess_bot.engine;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
 
-import java.util.Arrays;
-import java.util.Random;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import java.net.URL;
 
-import static dk.harning.chess_demo.engine.Pieces.*;
+import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class Controller implements Initializable {
 
