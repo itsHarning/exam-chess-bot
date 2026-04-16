@@ -21,7 +21,7 @@ public class Knight {
                     //Set target to avoid doing i+move repeatedly
                     int target = i+move;
                     //Still only works for white
-                    if(!isOffBoard(target) && (board[target] == 0 || board[target] < 8)){
+                    if(!isOffBoard(target) && (board[target] == 0 || board[target] > 8)){
                         //Encode the move
                         buffer[counter] = IntegerEncoder.encodeMove(i, target,1,false,0);
                         counter++; //Counting up to target the next empty index
