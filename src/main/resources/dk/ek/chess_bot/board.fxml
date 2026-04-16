@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<HBox alignment="CENTER" spacing="3.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dk.harning.chess_demo.engine.Controller">
+<HBox alignment="CENTER" spacing="3.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dk.ek.chess_bot.engine.Controller">
     <padding>
         <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
     </padding>

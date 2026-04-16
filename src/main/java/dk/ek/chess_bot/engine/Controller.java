@@ -1,4 +1,4 @@
-package dk.harning.chess_demo.engine;
+package dk.ek.chess_bot.engine;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -13,7 +13,7 @@ import java.util.ResourceBundle;
 
 import java.net.URL;
 
-import static dk.harning.chess_demo.engine.Pieces.*;
+import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class Controller implements Initializable {
 
