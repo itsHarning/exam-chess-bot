@@ -10,20 +10,23 @@ public class Piece {
     private static final int[] QUEEN_DIRECTIONS = {16, 1, -16, -1, 15, 17, -15, -17};
 
     // Moves for rook, bishop and queen. int[] directions is the relevant list of directions from this class
-    public static int getSlidingMoves(boolean isWhite, int pos, int[] board, int[] directions, int[] buffer, int counter) {
+    public static int getSlidingMoves(boolean isWhite, int pos, int[] board, int direction, int[] buffer, int counter) {
         // Set what piece we are
         int piece = board[pos];
+        /* This method has to be called for each direction as to allow recursive calling
         // Check each direction
-        for(int dir : directions){
+        for(int dir : directions) */
             // Set target square to avoid doing the math again and again
-            int target = pos+dir;
+            int target = pos+direction;
             // Check if target square is on the board
             if(!isOffBoard(target)){
                 // If square is empty, encode as a valid move
-                if(target == 0){
+                if(board[target] == 0){
                     buffer[counter++] = IntegerEncoder.encodeMove(
                             pos, target, piece, false, 0
                     );
+                    // Call this method with target as new position
+                    counter = getSlidingMoves(isWhite, target, board, direction, buffer, counter);
                     // If square is an enemy, encode it
                 } else if (isEnemy(isWhite,board[target])){
                     buffer[counter++] = IntegerEncoder.encodeMove(
@@ -31,7 +34,6 @@ public class Piece {
                     );
                 }
             }
-        }
         return counter;
     }
 
@@ -53,7 +55,7 @@ public class Piece {
 
         int[] buffer = new int[100];
 
-        int amount = getSlidingMoves(false, 4, board, BISHOP_DIRECTIONS, buffer, 0);
+        int amount = getSlidingMoves(false, 4, board, BISHOP_DIRECTIONS[1], buffer, 0);
         //System.out.println(amount);
 
         for(int i: buffer){
