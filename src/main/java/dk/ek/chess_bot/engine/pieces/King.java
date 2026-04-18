@@ -9,28 +9,25 @@ public class King {
             16, -16, 1, -1, 15, 17, -15, -17
     };
 
-    public static int getMoves(int[] board, int[] buffer, int counter, boolean isWhite){
+    public static int getMoves(int placement, int[] board, int[] buffer, int counter, boolean isWhite){
+        int pieceType = 6;
+        if (!isWhite) {pieceType = 14;}
 
-        int piecNr = 6;
-        if(!isWhite) piecNr = 14;
-
-        for (int i = 0; i < 128; i++) {
-            if(board[i] == piecNr){ //If the current square contains a WHITE king
-                //Check for every move if target square is either empty or enemy piece
-                for(int move : KING_MOVES) {
-                    //Set target to avoid doing i+move repeatedly
-                    int target = i+move;
-                    //Still only works for white
-                    if(!isOffBoard(target) && (board[target] == 0 || board[target] > 8)){
+        //Check for every move if target square is either empty or enemy piece
+            for(int move : KING_MOVES) {
+                //Set target to avoid doing i+move repeatedly
+                int target = placement+move;
+                //Off board?
+                if(!isOffBoard(target))
+                //(board[target] == 0 || board[target] > 8)){
                         //Encode the move
-                        buffer[counter] = IntegerEncoder.encodeMove(i, target,1,false,0);
+                        buffer[counter] = IntegerEncoder.encodeMove(placement, target,pieceType,false,0);
                         counter++; //Counting up to target the next empty index
                     }
-                }
-            }
-        }
-        return counter;
+            return counter;
     }
+
+
 
     static boolean isOffBoard(int squareIndex){
         return (squareIndex & 0x88) != 0;
@@ -41,7 +38,7 @@ public class King {
 
         int[] buffer = new int[100];
 
-        int amount = getMoves(board, buffer, 0, true);
+        int amount = getMoves(6, board, buffer, 0, true);
         //System.out.println(amount);
 
         for(int i: buffer){
