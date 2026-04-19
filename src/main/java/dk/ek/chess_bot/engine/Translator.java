@@ -155,7 +155,7 @@ public class Translator {
     //EnPassant metodes
     private static String enPassantToFEN(int index) {
         if (index == 0) {
-            return "-";
+            return "-"; //TODO problemet med A1 på board. Det er jo 0.
         }
 
         int file = index % 16;
@@ -169,7 +169,7 @@ public class Translator {
 
     private static int fenToEnPassantIndex(String enPassant) {
         if (enPassant.equals("-")) {
-            return 0;
+            return 0; //TODO problemet med A1 på board. Det er jo 0.
         }
 
         char fileChar = enPassant.charAt(0);
