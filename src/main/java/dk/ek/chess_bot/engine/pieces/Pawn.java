@@ -56,17 +56,23 @@ public class   Pawn {
     static boolean isOffBoard(int squareIndex){
         return (squareIndex & 0x88) != 0;
     }
-
+    //TODO For testing, delete later
     public static void main(String[] args) {
         int [] board = new Board().board;
 
         int[] buffer = new int[100];
 
+        board[35] = 9;
+
         int amount = getMoves(board, buffer, 0, true);
         //System.out.println(amount);
 
+
         for(int i: buffer){
-            System.out.println(IntegerEncoder.decodeFromSquare(i) + " -> " + IntegerEncoder.decodeToSquare(i));
+            if(i != 0){
+                System.out.println(IntegerEncoder.decodeFromSquare(i) + " -> " + IntegerEncoder.decodeToSquare(i));
+            }
+
         }
         System.out.println(IntegerEncoder.decodeToSquare(buffer[1]));
     }

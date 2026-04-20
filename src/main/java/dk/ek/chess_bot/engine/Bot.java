@@ -3,7 +3,6 @@ package dk.ek.chess_bot.engine;
 import dk.ek.chess_bot.engine.pieces.Pawn;
 
 public class Bot {
-
     static int[] currentBoard;
     static boolean blackCastleKingSide;
     static boolean blackCastleQueenSide;
