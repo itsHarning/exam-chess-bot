@@ -236,14 +236,16 @@ public class Translator {
 
     // Testing
     public static void main(String[] args) {
-        // 1. test
-        // String result = enPassantToFEN(34);
-        //System.out.println(result);
+        // 1. test (FAILED)
+        String result = enPassantToFEN(1);
+        //Problemet er at hvis GameState har passant sat til 0 som ingen, men plads 0 er jo A1 på brættet.
+        System.out.println(result);
 
-        // 2. test
-        // int result = fenToEnPassantIndex("c3");
-        //System.out.println(result);
+        // 2. test (FAILED) begge a1 og - giver 0
+        int result2 = fenToEnPassantIndex("-");
+        System.out.println(result2);
 
+        /*
         String startFen = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         System.out.println("Original FEN:");
@@ -259,5 +261,6 @@ public class Translator {
 
         System.out.println("\nConverted back to FEN:");
         System.out.println(convertedFen);
+        */
     }
 }
