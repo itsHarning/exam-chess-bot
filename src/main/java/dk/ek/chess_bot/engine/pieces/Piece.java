@@ -12,13 +12,54 @@ public class Piece {
 
     public static int getMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter){
         return switch (board[pos]) {
+            case 1, 9 -> getPawnMoves(isWhite, pos, board, buffer, counter);
             case 2, 10 -> getNonSlidingMoves(isWhite, pos, board, KNIGHT_MOVES, buffer, counter);
             case 3, 11 -> getAllSlidingMoves(isWhite, pos, board, BISHOP_DIRECTIONS, buffer, counter);
             case 4, 12 -> getAllSlidingMoves(isWhite, pos, board, ROOK_DIRECTIONS, buffer, counter);
             case 5, 13 -> getAllSlidingMoves(isWhite, pos, board, KING_QUEEN_DIRECTIONS, buffer, counter);
             case 6, 14 -> getNonSlidingMoves(isWhite, pos, board, KING_QUEEN_DIRECTIONS, buffer, counter);
-            default -> pos;
+            default -> counter;
         };
+    }
+
+    public static int getPawnMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter) {
+        int piece = board[pos];
+        int forward;
+        // Decide forward
+        if (isWhite) {forward = 16;}
+        else {forward = -16;}
+
+        // Check forward
+        if(!isOffBoard(pos+forward) && board[pos+forward] == 0){
+            buffer[counter++] = IntegerEncoder.encodeMove(
+                    pos, pos+forward, piece, false, 0
+            );
+            // If pawn has not moved, check the square further forward
+            if(!isOffBoard(pos+forward+forward) && board[pos+forward+forward] == 0 && pawnAtStart(isWhite, pos)) {
+                buffer[counter++] = IntegerEncoder.encodeMove(
+                        pos, pos+forward+forward, piece, false, 0
+                );
+            }
+        }
+        // Check if attack is possible
+        if(!isOffBoard(pos+forward+1) && (isEnemy(isWhite, board[pos+forward+1]))) {
+            buffer[counter++] = IntegerEncoder.encodeMove(
+                    pos, pos+forward+1, piece, true, board[pos+forward+1]
+            );
+        }
+        // Check both possible attacks
+        if(!isOffBoard(pos+forward-1) && (isEnemy(isWhite, board[pos+forward-1]))) {
+            buffer[counter++] = IntegerEncoder.encodeMove(
+                    pos, pos+forward-1, piece, true, board[pos+forward-1]
+            );
+        }
+
+        return counter;
+    }
+
+    public static boolean pawnAtStart(boolean isWhite, int pos) {
+        if(isWhite) {return (16 <= pos && pos < 24);}
+        else {return (96 <= pos && pos < 104);}
     }
 
     public static int getAllSlidingMoves(boolean isWhite, int pos, int[] board, int[] directions, int[] buffer, int counter) {
@@ -94,9 +135,10 @@ public class Piece {
         int [] board = new Board().board;
 
         int[] buffer = new int[100];
-
+        board[81] = 2;
+        board[83] = 2;
         //int amount = getAllSlidingMoves(false, 1, board, BISHOP_DIRECTIONS, buffer, 0);
-        int nonSliding = getNonSlidingMoves(false, 1, board, KING_QUEEN_DIRECTIONS, buffer, 0);
+        int nonSliding = getPawnMoves(false, 98, board, buffer, 0);
 
         for(int i: buffer){
             System.out.println(IntegerEncoder.decodeFromSquare(i) + " -> " + IntegerEncoder.decodeToSquare(i));
