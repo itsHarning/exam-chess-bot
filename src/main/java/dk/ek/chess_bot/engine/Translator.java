@@ -9,4 +9,8 @@ public class Translator {
     static GameState gameStateFromFEM(String fen){
         return new GameState();
     }
+
+    public static void main(String[] args) {
+
+    }
 }

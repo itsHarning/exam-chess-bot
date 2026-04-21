@@ -11,10 +11,6 @@ public class GameState {
     private int totalMoves;
     private int halfMoveClock;
 
-    public GameState(String fen){
-        //Set variables by interpreting FEN string
-    }
-
     public GameState(){
         this.board = Board.getFreshBoard();
         this.blackCastleKingSide = true;
