@@ -24,6 +24,9 @@ public class Piece {
 
     public static int getPawnMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter) {
         int piece = board[pos];
+        if(isWhite && piece != 1) return counter;
+        if(!isWhite && piece != 9) return counter;
+
         int forward;
         // Decide forward
         if (isWhite) {forward = 16;}
@@ -63,6 +66,9 @@ public class Piece {
     }
 
     public static int getAllSlidingMoves(boolean isWhite, int pos, int[] board, int[] directions, int[] buffer, int counter) {
+        int piece = board[pos];
+        if(isWhite && !(piece >= 1 && piece <=6)) return counter;
+        if(!isWhite && !(piece >= 9 && piece <=14)) return counter;
         // Check each direction
         for(int direction : directions)
             // Get sliding moves
@@ -96,6 +102,10 @@ public class Piece {
     public static int getNonSlidingMoves(boolean isWhite, int pos, int[] board, int[] directions, int[] buffer, int counter){
         // Set what piece we are
         int piece = board[pos];
+
+        if(isWhite && !(piece >= 1 && piece <=6)) return counter;
+        if(!isWhite && !(piece >= 9 && piece <=14)) return counter;
+
         // Check each direction
         for(int direction : directions) {
             int target = pos+direction;
