@@ -22,7 +22,7 @@ public class Bot {
         currentBoard = gameState.getCurrentBoard();
         blackCastleQueenSide = gameState.isBlackCastleQueenSide();
         blackCastleKingSide = gameState.isBlackCastleKingSide();
-        whiteCastleKingSide = gameState.isBlackCastleKingSide();
+        whiteCastleKingSide = gameState.isWhiteCastleKingSide();
         whiteCastleQueenSide = gameState.isWhiteCastleQueenSide();
         isWhiteToMove = gameState.isWhiteToMove();
         enPassantIndex = gameState.getEnPassantIndex();
@@ -38,15 +38,24 @@ public class Bot {
         for (int i = 0; i < 128; i++) {
             counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
         }
-        System.out.println("found: " + counter + " moves");
+
+        int bestMoveFound = 0;
+        int alpha = -100000;
+        int beta = 100000;
 
         for (int i = 0; i < counter; i++) {
-            System.out.println("Move: " +(i+1));
             makeMove(possibleMoves[0][i]);
-            Board.printBoard(currentBoard);
+            int score = alphaBeta(possibleMoves, 0, 3, false, alpha, beta);
             unMakeMove(possibleMoves[0][i]);
+            if(score > alpha){
+                alpha = score;
+                bestMoveFound = possibleMoves[0][i];
+            }
         }
 
+        makeMove(bestMoveFound);
+        System.out.println("Found this as the best move: ");
+        Board.printBoard(currentBoard);
         return convertIndexToCoordinates(IntegerEncoder.decodeFromSquare(possibleMoves[0][0]))
                 + convertIndexToCoordinates(IntegerEncoder.decodeToSquare(possibleMoves[0][0]));
     }
@@ -185,6 +194,8 @@ public class Bot {
     }
 
     static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
+        depth = depth+1; //We start by incrementing the depth
+
         if(depth == targetDepth){
             return getScore(currentBoard);
         }
@@ -193,25 +204,15 @@ public class Bot {
 
         if(isMax){
             for (int i = 0; i < 128; i++) {
-                if(currentBoard[i] != 0){
-                    if(isWhiteToMove && (currentBoard[i]>0 && currentBoard[i]<7)){
-                        //Max is white, and we have found one of our pieces
-                        //Get possible moves from piece class and add to list
-                        //TODO: pull new piece logic into main and pull it into branch
-                    }
-                    else{
-                        //It is not white to move, and the piece we have found is not theirs, which means it is ours
-                        //Get possible moves from piece class and add to list
-                    }
-                }
+                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
-            for (int i = 0; i < moveList[depth].length; i++) {
+            for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
 
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
-                    int score = alphaBeta(moveList, depth + 1, targetDepth, !isMax, alpha, beta);
+                    int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
 
                     alpha = Math.max(alpha, score);
@@ -222,12 +223,27 @@ public class Bot {
             }
             return alpha;
         }
-        if(!isMax){
+        else{
             for (int i = 0; i < 128; i++) {
-                //getMovesFromPieceClass
+                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
+            for (int i = 0; i < counter; i++) {
+                //TODO: implement simple selection sort
+
+                int move = moveList[depth][i];
+                if (move != 0) {
+                    makeMove(move);
+                    int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+                    unMakeMove(move);
+
+                    beta = Math.min(beta, score);
+                    if (beta <= alpha) {
+                        return beta;
+                    }
+                }
+            }
+            return beta;
         }
-        return 1;
     }
 
     static int getScore(int[] board){
