@@ -1,6 +1,7 @@
 package dk.ek.chess_bot.engine;
 
 import dk.ek.chess_bot.engine.pieces.Pawn;
+import dk.ek.chess_bot.engine.pieces.Piece;
 
 public class Bot {
     static int[] currentBoard;
@@ -33,13 +34,18 @@ public class Bot {
         bestMoveSoFar = 0;
 
         int[][] possibleMoves = new int[64][256];
-        getAllMoves(possibleMoves, 0);
+        int counter = 0;
+        for (int i = 0; i < 128; i++) {
+            counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
+        }
+        System.out.println("found: " + counter + " moves");
 
-        Board.printBoard(currentBoard);
-        makeMove(possibleMoves[0][5]);
-        Board.printBoard(currentBoard);
-        unMakeMove(possibleMoves[0][5]);
-        Board.printBoard(currentBoard);
+        for (int i = 0; i < counter; i++) {
+            System.out.println("Move: " +(i+1));
+            makeMove(possibleMoves[0][i]);
+            Board.printBoard(currentBoard);
+            unMakeMove(possibleMoves[0][i]);
+        }
 
         return convertIndexToCoordinates(IntegerEncoder.decodeFromSquare(possibleMoves[0][0]))
                 + convertIndexToCoordinates(IntegerEncoder.decodeToSquare(possibleMoves[0][0]));

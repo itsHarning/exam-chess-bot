@@ -92,13 +92,13 @@ public class Board {
                         System.out.print("♙");
                         break;
                     case 2:
-                        System.out.print("♖");
-                        break;
-                    case 3:
                         System.out.print("♘");
                         break;
-                    case 4:
+                    case 3:
                         System.out.print("♗");
+                        break;
+                    case 4:
+                        System.out.print("♖");
                         break;
                     case 5:
                         System.out.print("♕");
@@ -110,13 +110,13 @@ public class Board {
                         System.out.print("♟");
                         break;
                     case 10:
-                        System.out.print("♜");
-                        break;
-                    case 11:
                         System.out.print("♞");
                         break;
-                    case 12:
+                    case 11:
                         System.out.print("♝");
+                        break;
+                    case 12:
+                        System.out.print("♜");
                         break;
                     case 13:
                         System.out.print("♛");
