@@ -154,10 +154,9 @@ public class Translator {
 
     //EnPassant metodes
     private static String enPassantToFEN(int index) {
-        if (index == 0) {
-            return "-"; //TODO problemet med A1 på board. Det er jo 0.
+        if(index < 0) {
+            return "-";
         }
-
         int file = index % 16;
         int rank = index / 16;
 
@@ -169,7 +168,7 @@ public class Translator {
 
     private static int fenToEnPassantIndex(String enPassant) {
         if (enPassant.equals("-")) {
-            return 0; //TODO problemet med A1 på board. Det er jo 0.
+            return -1;
         }
 
         char fileChar = enPassant.charAt(0);
@@ -236,17 +235,18 @@ public class Translator {
 
     // Testing
     public static void main(String[] args) {
+
         // 1. test (FAILED)
-        String result = enPassantToFEN(1);
+        String result = enPassantToFEN(0);
         //Problemet er at hvis GameState har passant sat til 0 som ingen, men plads 0 er jo A1 på brættet.
         System.out.println(result);
 
         // 2. test (FAILED) begge a1 og - giver 0
-        int result2 = fenToEnPassantIndex("-");
-        System.out.println(result2);
+        /*int result2 = fenToEnPassantIndex("a1");
+        System.out.println(result2);*/
 
         /*
-        String startFen = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        String startFen = "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w KQkq a1 0 1";
 
         System.out.println("Original FEN:");
         System.out.println(startFen);
