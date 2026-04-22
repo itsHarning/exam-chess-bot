@@ -11,6 +11,7 @@
 
     <GridPane fx:id="grid" maxHeight="640.0" maxWidth="640.0">
       <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="10.0" />
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
@@ -19,8 +20,10 @@
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" prefWidth="10.0" />
       </columnConstraints>
       <rowConstraints>
+          <RowConstraints prefHeight="10.0" vgrow="SOMETIMES" />
           <RowConstraints prefHeight="100.0" vgrow="SOMETIMES" />
           <RowConstraints prefHeight="100.0" vgrow="SOMETIMES" />
           <RowConstraints prefHeight="100.0" vgrow="SOMETIMES" />
@@ -29,17 +32,24 @@
           <RowConstraints prefHeight="100.0" vgrow="SOMETIMES" />
           <RowConstraints prefHeight="100.0" vgrow="SOMETIMES" />
           <RowConstraints prefHeight="100.0" vgrow="SOMETIMES" />
+          <RowConstraints prefHeight="10.0" vgrow="SOMETIMES" />
       </rowConstraints>
     </GridPane>
     <VBox prefHeight="200.0" prefWidth="500.0">
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
             <TextField fx:id="fenField" prefHeight="25.0" prefWidth="400.0" text="FEN">
                 <HBox.margin>
-                    <Insets right="5.0"/>
+                    <Insets right="5.0" />
                 </HBox.margin>
             </TextField>
-            <Button fx:id="fromFEN" onAction="#FENToBoard" text="Load FEN"/>
+            <Button onAction="#FENToBoard" text="Load FEN" />
         </HBox>
-        <Button fx:id="toFEN" onAction="#boardToFEN" text="Get FEN"/>
+        <Button onAction="#boardToFEN" text="Get FEN" />
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <RadioButton fx:id="whiteTurn" mnemonicParsing="false" onAction="#setTurnWhite" selected="true" text="White" />
+            <RadioButton fx:id="blackTurn" mnemonicParsing="false" onAction="#setTurnBlack" selected="true" text="Black" />
+         </children>
+      </HBox>
     </VBox>
 </HBox>

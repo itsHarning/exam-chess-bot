@@ -2,13 +2,18 @@ package dk.ek.chess_bot.engine;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -19,68 +24,147 @@ public class Controller implements Initializable {
 
 	@FXML
 	private GridPane grid;
+
 	@FXML
-	private Button fromFEN;
+	private Toggle whiteTurn;
+	@FXML
+	private Toggle blackTurn;
+
 	@FXML
 	private TextField fenField;
 
 	private Pane paneToMove;
 	private String paneColour = "";
 	private String pieceToMove = "";
-	private int from;
+    private int from;
 	private int to;
 
-	private Board board;
+	private GameState gameState;
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		this.board = new Board();
+	@FXML
+	public void setTurnWhite() {
+		System.out.println("toggle");
+        blackTurn.setSelected(!whiteTurn.isSelected());
+	}
 
-		initBoard();
+	@FXML
+	public void setTurnBlack() {
+		System.out.println("toggle");
+        whiteTurn.setSelected(!blackTurn.isSelected());
 	}
 
 	@FXML
 	public void FENToBoard() {
 		System.out.println(fenField.getText());
 		String fenString = fenField.getText();
+
 		// Example fen string
 		// 5r2/q3k3/b1pp4/2n1p1b1/2P1P3/1p1P1Q1P/1P2NPP1/3RK2R w - - 0 1
-		this.board = new Board(fenString);
+
+		gameState = Translator.gameStateFromFEN(fenString);
+		// board = gameState.getCurrentBoard();
 
 		initBoard();
 	}
 
 	@FXML
 	public void boardToFEN() {
-		// TODO: get fen string from current board
+		// gameState.setCurrentBoard(board);
+		printBoard(gameState.getCurrentBoard());
+
+		System.out.println(Translator.gameStateToFEN(gameState));
+	}
+
+	private static void printBoard(int[] board) {
+		for (int rank = 7; rank >= 0; rank--) {
+			for (int file = 0; file < 8; file++) {
+				int index = rank * 16 + file;
+				int piece = board[index];
+
+				if (piece == EMPTY) {
+					System.out.print(". ");
+				} else {
+					System.out.print(piece + " ");
+				}
+			}
+			System.out.println();
+		}
+	}
+
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		this.gameState = new GameState();
+		whiteTurn.setSelected(gameState.isWhiteToMove());
+		blackTurn.setSelected(!gameState.isWhiteToMove());
+
+		initBoard();
 	}
 
 	@FXML
 	public void initBoard() {
-		// start.setVisible(false);
-		for (int i = 0; i < 8; i++) {
-			for (int j = 0; j < 8; j++) {
-				int[] board = this.board.board;
-				System.out.println("(" + i + ", " + j + ")");
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				// sets up coordinates on side of the board
+				if (j == 0 || j == 9 || i == 0 || i == 9) {
+					Text text = new Text();
+					if (j == 0 || j == 9) {
+						// System.out.println(j + ", " + i);
+						text.setText(String.valueOf(i));
+					}
+					if (i == 0 || i == 9) {
+						char letter = 0;
+						switch (j) {
+							case 1 -> letter = 'A';
+							case 2 -> letter = 'B';
+							case 3 -> letter = 'C';
+							case 4 -> letter = 'D';
+							case 5 -> letter = 'E';
+							case 6 -> letter = 'F';
+							case 7 -> letter = 'G';
+							case 8 -> letter = 'H';
+						};
+						text.setText("\t" + letter);
+
+						// TODO get center alignment to work
+						text.setTextAlignment(TextAlignment.CENTER);
+						// text.setWrappingWidth(50);
+						text.wrappingWidthProperty().bind(grid.prefWidthProperty());
+					}
+					grid.add(text, j, i);
+					continue;
+				}
+
+				i--;
+				j--;
+
+				int[] board = this.gameState.getCurrentBoard();
+				// System.out.println("(" + i + ", " + j + ")");
 				int square = convert0x88(i, j);
-				System.out.println(square);
+				// System.out.println(square);
 				int piece = board[square];
-				System.out.println(piece);
+				// System.out.println(piece);
 
 				Pane pane = new Pane();
+
+				String imageSettings = "-fx-background-size: 80 80;" + "-fx-background-position: center;";
 
 				pane.setOnMousePressed((MouseEvent event) -> {
 					if (event.getButton() == MouseButton.PRIMARY) {
 						if (paneToMove == null) {
-							// System.out.println(pane.getStyle());
+							// System.out.println("1. id: " + pane.getId());
+							// pieceToMoveId = pane.getId();
+
+							System.out.println(pane.getStyle());
 							String[] splitCSS = pane.getStyle().split("(?<=;)");
-							// System.out.println(Arrays.toString(splitCSS));
+							// for (String s : splitCSS) {
+							// 	System.out.println(s);
+							// }
 
 							if (splitCSS.length > 1) {
 								paneColour = splitCSS[0];
-								pieceToMove = splitCSS[1] + splitCSS[2];
+								pieceToMove = splitCSS[1];
 								splitCSS[0] = "-fx-background-color: #FF0000;";
-								pane.setStyle(splitCSS[0] + splitCSS[1] + splitCSS[2]);
+								pane.setStyle(splitCSS[0] + splitCSS[1] + imageSettings);
 							} else {
 								paneToMove = null;
 								return;
@@ -88,39 +172,59 @@ public class Controller implements Initializable {
 							paneToMove = pane;
 							from = square;
 
-							System.out.println(from);
+							System.out.println("from " + from);
+							System.out.println(board[to]);
 
 							// System.out.println(paneColour);
 						} else {
+							// System.out.println("2. id: " + pane.getId());
 							to = square;
 
-							System.out.println(to);
+							System.out.println("to " + to);
+							System.out.println(board[to]);
 
-							pane.setStyle(pane.getStyle() + pieceToMove);
+							board[to] = board[from]; // set the piece in its new location
+							board[from] = 0; // sets the place where piece was to empty
+
+							// pane.setId(pieceToMoveId);
+							pane.setStyle(
+									pane.getStyle().split("(?<=;)")[0]
+									+ pieceToMove
+									+ imageSettings
+							);
 
 							paneToMove.setStyle(paneColour);
+							// paneToMove.setId("0");
 							paneToMove = null;
+
+							gameState.setWhiteToMove(!gameState.isWhiteToMove());
+							whiteTurn.setSelected(gameState.isWhiteToMove());
+							blackTurn.setSelected(!gameState.isWhiteToMove());
 						}
+
+						gameState.setCurrentBoard(board);
+						System.out.println("piece moved");
 					}
 				});
 
 				String light = "-fx-background-color: #e8ceab;";
 				String dark = "-fx-background-color: #bc7944;";
-				String bc = "-fx-background-size: 80 80;" + "-fx-background-position: center;";
 
 				if (piece != 0) {
-					if (i % 2 == 0) {
+                    if (i % 2 == 0) {
 						if (j % 2 == 0) {
 							// light
-							pane.setStyle(light
+							pane.setStyle(
+									light
 									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ bc);
+									+ imageSettings
+							);
 						} else {
 							// dark
 							pane.setStyle(
 									dark
 									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ bc
+									+ imageSettings
 							);
 						}
 					} else {
@@ -128,16 +232,17 @@ public class Controller implements Initializable {
 							pane.setStyle(
 									light
 									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ bc
+									+ imageSettings
 							);
 						} else {
 							pane.setStyle(
 									dark
 									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ bc
+									+ imageSettings
 							);
 						}
 					}
+					pane.setId(String.valueOf(piece));
 				} else {
 					if (i % 2 == 0) {
 						if (j % 2 == 0) {
@@ -152,9 +257,11 @@ public class Controller implements Initializable {
 							pane.setStyle(dark);
 						}
 					}
-
+					pane.setId("0");
 				}
 
+				i++;
+				j++;
 				grid.add(pane, j, i);
 			}
 		}
