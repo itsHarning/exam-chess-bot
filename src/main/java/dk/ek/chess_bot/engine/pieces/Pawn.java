@@ -3,7 +3,7 @@ package dk.ek.chess_bot.engine.pieces;
 import dk.ek.chess_bot.engine.Board;
 import dk.ek.chess_bot.engine.IntegerEncoder;
 
-abstract public class Pawn {
+public class   Pawn {
     public static int getMoves(int[] board, int[] buffer, int counter, boolean isWhite){
 
         int piecNr = 1;
