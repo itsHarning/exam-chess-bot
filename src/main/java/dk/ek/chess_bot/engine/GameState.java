@@ -18,7 +18,7 @@ public class GameState {
         this.whiteCastleKingSide = true;
         this.whiteCastleQueenSide = true;
         this.isWhiteToMove = true;
-        this.enPassantIndex = 0;
+        this.enPassantIndex = -1;
         this.totalMoves = 0;
         this.halfMoveClock = 0;
     }

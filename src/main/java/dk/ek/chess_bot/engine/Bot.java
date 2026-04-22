@@ -3,6 +3,8 @@ package dk.ek.chess_bot.engine;
 import dk.ek.chess_bot.engine.pieces.Pawn;
 import dk.ek.chess_bot.engine.pieces.Piece;
 
+import java.sql.Time;
+
 public class Bot {
     static int[] currentBoard;
     static boolean blackCastleKingSide;
@@ -18,6 +20,8 @@ public class Bot {
     static int bestMoveSoFar;
     static int identity;
 
+    static int nodesSearched = 0;
+
     static String getNextMove(GameState gameState){
         currentBoard = gameState.getCurrentBoard();
         blackCastleQueenSide = gameState.isBlackCastleQueenSide();
@@ -32,6 +36,7 @@ public class Bot {
 
         //We reset the best move, to purge old info
         bestMoveSoFar = 0;
+        nodesSearched = 0; //Amount of nodes searched too
 
         int[][] possibleMoves = new int[64][256];
         int counter = 0;
@@ -43,18 +48,19 @@ public class Bot {
         int alpha = -100000;
         int beta = 100000;
 
+
         for (int i = 0; i < counter; i++) {
             makeMove(possibleMoves[0][i]);
-            int score = alphaBeta(possibleMoves, 0, 3, false, alpha, beta);
+            int score = alphaBeta(possibleMoves, 0, 5, false, alpha, beta);
             unMakeMove(possibleMoves[0][i]);
             if(score > alpha){
                 alpha = score;
                 bestMoveFound = possibleMoves[0][i];
             }
         }
-
+        System.out.println("score before: " + Board.getScore(currentBoard, isWhiteToMove));
         makeMove(bestMoveFound);
-        System.out.println("Found this as the best move: ");
+        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + nodesSearched + " nodes");
         Board.printBoard(currentBoard);
         return convertIndexToCoordinates(IntegerEncoder.decodeFromSquare(possibleMoves[0][0]))
                 + convertIndexToCoordinates(IntegerEncoder.decodeToSquare(possibleMoves[0][0]));
@@ -63,6 +69,7 @@ public class Bot {
     static void makeMove(int move){
         //Many cases are appropriate to consider here. First we get the basic info
         int pieceType = IntegerEncoder.decodeOwnPieceType(move);
+        if(!isWhiteToMove) pieceType = 0b1000|pieceType;
         int fromSquare = IntegerEncoder.decodeFromSquare(move);
         int toSquare = IntegerEncoder.decodeToSquare(move);
 
@@ -106,19 +113,27 @@ public class Bot {
     }
 
     static void unMakeMove(int move){ //Unmaking a move is also quite complicated
-        //First get basic info on the move
+        //1: We change back to be able to know who "We" are.
+        isWhiteToMove = !isWhiteToMove;
+
+        //2: Get basic info on the move
         int pieceType = IntegerEncoder.decodeOwnPieceType(move);
+        if(!isWhiteToMove) pieceType = 0b1000 |pieceType;
         int fromSquare = IntegerEncoder.decodeFromSquare(move);
         int toSquare = IntegerEncoder.decodeToSquare(move);
 
+        //3: restore the fromsquare to the piece we moved
         currentBoard[fromSquare] = pieceType;
-        currentBoard[toSquare] = 0; //If it was a simple move we can leave it at that
-        if(IntegerEncoder.decodeIsCapture(move)){ //If the move was a capture however, we need to put the capture piece back
+
+        //4: Handle if it was a capture
+        if(IntegerEncoder.decodeIsCapture(move)){ //If the move was a capture, we need to put the captured piece back
             int capPieceType = IntegerEncoder.decodeCapturedPieceType(move);
-            if(!isWhiteToMove){
-                capPieceType = 0b1000 | pieceType; //We do bit math to change the number!
+            if(isWhiteToMove){ //Flip to the black version if we are white (because white takes black pieces)
+                capPieceType = 0b1000 | capPieceType; //We do bit math to change the number!
             }
             currentBoard[toSquare] = capPieceType; //We put the piece back
+        }else{
+            currentBoard[toSquare] = 0; //If it was a simple move we can leave it as empty
         }
 
         if(IntegerEncoder.decodeIsPromo(move)){
@@ -146,8 +161,6 @@ public class Bot {
             //Make the logic solid and sturdy, and make the gyal them flirty and dirty
         }
 
-        //Change who is moving
-        isWhiteToMove = !isWhiteToMove;
     }
 
     static String convertIndexToCoordinates(int index){
@@ -196,9 +209,23 @@ public class Bot {
     static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
         depth = depth+1; //We start by incrementing the depth
 
-        if(depth == targetDepth){
-            return getScore(currentBoard);
+        nodesSearched++;
+
+        /*
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+
         }
+
+         */
+
+
+        if(depth == targetDepth){
+            return Board.getScore(currentBoard, isWhiteToMove);
+        }
+
+
 
         int counter = 0;
 
