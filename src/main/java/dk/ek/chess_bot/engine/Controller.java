@@ -2,18 +2,15 @@ package dk.ek.chess_bot.engine;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -62,14 +59,12 @@ public class Controller implements Initializable {
 		// 5r2/q3k3/b1pp4/2n1p1b1/2P1P3/1p1P1Q1P/1P2NPP1/3RK2R w - - 0 1
 
 		gameState = Translator.gameStateFromFEN(fenString);
-		// board = gameState.getCurrentBoard();
 
 		initBoard();
 	}
 
 	@FXML
 	public void boardToFEN() {
-		// gameState.setCurrentBoard(board);
 		printBoard(gameState.getCurrentBoard());
 
 		System.out.println(Translator.gameStateToFEN(gameState));
@@ -134,15 +129,13 @@ public class Controller implements Initializable {
 					continue;
 				}
 
+				// changes i/j to fit board coordinates
 				i--;
 				j--;
 
 				int[] board = this.gameState.getCurrentBoard();
-				// System.out.println("(" + i + ", " + j + ")");
 				int square = convert0x88(i, j);
-				// System.out.println(square);
 				int piece = board[square];
-				// System.out.println(piece);
 
 				Pane pane = new Pane();
 
@@ -151,14 +144,8 @@ public class Controller implements Initializable {
 				pane.setOnMousePressed((MouseEvent event) -> {
 					if (event.getButton() == MouseButton.PRIMARY) {
 						if (paneToMove == null) {
-							// System.out.println("1. id: " + pane.getId());
-							// pieceToMoveId = pane.getId();
 
-							System.out.println(pane.getStyle());
 							String[] splitCSS = pane.getStyle().split("(?<=;)");
-							// for (String s : splitCSS) {
-							// 	System.out.println(s);
-							// }
 
 							if (splitCSS.length > 1) {
 								paneColour = splitCSS[0];
@@ -175,9 +162,7 @@ public class Controller implements Initializable {
 							System.out.println("from " + from);
 							System.out.println(board[to]);
 
-							// System.out.println(paneColour);
 						} else {
-							// System.out.println("2. id: " + pane.getId());
 							to = square;
 
 							System.out.println("to " + to);
@@ -186,7 +171,6 @@ public class Controller implements Initializable {
 							board[to] = board[from]; // set the piece in its new location
 							board[from] = 0; // sets the place where piece was to empty
 
-							// pane.setId(pieceToMoveId);
 							pane.setStyle(
 									pane.getStyle().split("(?<=;)")[0]
 									+ pieceToMove
@@ -260,6 +244,7 @@ public class Controller implements Initializable {
 					pane.setId("0");
 				}
 
+				// changes i/j back to fit for loop
 				i++;
 				j++;
 				grid.add(pane, j, i);
