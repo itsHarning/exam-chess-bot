@@ -67,7 +67,7 @@ public class Bot {
 
         for (int i = 0; i < counter; i++) {
             makeMove(possibleMoves[0][i]);
-            int score = alphaBeta(possibleMoves, 0, 8, false, alpha, beta);
+            int score = alphaBeta(possibleMoves, 0, 4, false, alpha, beta);
             unMakeMove(possibleMoves[0][i]);
             if(score > alpha){
                 alpha = score;
