@@ -263,8 +263,4 @@ public class Translator {
         System.out.println(convertedFen);
         */
     }
-
-    public static void main(String[] args) {
-
-    }
 }

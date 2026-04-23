@@ -37,7 +37,7 @@ public class Bot {
 
     static int nodesSearched = 0;
 
-    static String getNextMove(GameState gameState){
+    static GameState getNextMove(GameState gameState){
         currentBoard = gameState.getCurrentBoard();
         blackCastleQueenSide = gameState.isBlackCastleQueenSide();
         blackCastleKingSide = gameState.isBlackCastleKingSide();
@@ -79,8 +79,11 @@ public class Bot {
         System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + nodesSearched + " nodes");
         Board.printBoard(currentBoard);
 
+        GameState newGameState = new GameState();
+        newGameState.setWhiteToMove(isWhiteToMove);
+        newGameState.setCurrentBoard(currentBoard);
 
-        return "";
+        return newGameState;
     }
 
     static void makeMove(int move){

@@ -63,6 +63,12 @@ public class Controller implements Initializable {
 		initBoard();
 	}
 
+    @FXML
+    public void makeMove(){
+        gameState = Bot.getNextMove(gameState);
+        initBoard();
+    }
+
 	@FXML
 	public void boardToFEN() {
 		printBoard(gameState.getCurrentBoard());
