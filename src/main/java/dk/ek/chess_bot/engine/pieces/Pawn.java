@@ -18,14 +18,14 @@ public class   Pawn {
                 if(!isOffBoard(i+forward) && board[i+forward] == 0){
                     //If we reach this point, the square in front is empty, and is on the board. Good!
                     //Encode the move
-                    buffer[counter] = IntegerEncoder.encodeMove(i, i+forward,1,false,0);
+                    buffer[counter] = IntegerEncoder.encodeMove(i, i+forward,1,false,0, false, false);
                     counter++; //Counting up to target the next empty index
 
                     if ((isWhite && i < 25) || (!isWhite && i>95)){ //If they are in their starting position, we can do more!
                         if(!isOffBoard(i+forward*2) && board[i+(forward*2)] == 0){
                             //We can move to this space, because there is no one in front, and no one two spaces ahead
                             //Encode the move
-                            buffer[counter] = IntegerEncoder.encodeMove(i, i+forward*2,1, false, 0);
+                            buffer[counter] = IntegerEncoder.encodeMove(i, i+forward*2,1, false, 0, false, false);
                             counter++;
                         }
                     }
@@ -35,7 +35,7 @@ public class   Pawn {
                 int attackIndex1 = i+forward-1;
                 if(!isOffBoard(attackIndex1)){
                     if((isWhite && board[attackIndex1] > 8)||(!isWhite && board[attackIndex1] < 8 && board[attackIndex1] != 0)){
-                        buffer[counter] = IntegerEncoder.encodeMove(i, attackIndex1,1, true, board[attackIndex1]&0x7);
+                        buffer[counter] = IntegerEncoder.encodeMove(i, attackIndex1,1, true, board[attackIndex1]&0x7, false, false);
                         counter++;
                     }
                 }
@@ -43,7 +43,7 @@ public class   Pawn {
                 int attackIndex2 = i+forward+1;
                 if(!isOffBoard(attackIndex2)){
                     if((isWhite && board[attackIndex2] > 8)||(!isWhite && board[attackIndex2] < 8 && board[attackIndex2] != 0)){
-                        buffer[counter] = IntegerEncoder.encodeMove(i, attackIndex2,1, true, board[attackIndex1]&0x7);
+                        buffer[counter] = IntegerEncoder.encodeMove(i, attackIndex2,1, true, board[attackIndex1]&0x7, false, false);
                         counter++;
                     }
                 }
@@ -56,6 +56,7 @@ public class   Pawn {
     static boolean isOffBoard(int squareIndex){
         return (squareIndex & 0x88) != 0;
     }
+
     //TODO For testing, delete later
     public static void main(String[] args) {
         int [] board = new Board().board;

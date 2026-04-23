@@ -51,5 +51,6 @@
             <RadioButton fx:id="blackTurn" mnemonicParsing="false" onAction="#setTurnBlack" selected="true" text="Black" />
          </children>
       </HBox>
+      <Button mnemonicParsing="false" onAction="#makeMove" text="MakeMove" />
     </VBox>
 </HBox>

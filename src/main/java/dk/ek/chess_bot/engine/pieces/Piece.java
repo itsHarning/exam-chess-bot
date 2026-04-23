@@ -24,6 +24,9 @@ public class Piece {
 
     public static int getPawnMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter) {
         int piece = board[pos];
+        if(isWhite && piece != 1) return counter;
+        if(!isWhite && piece != 9) return counter;
+
         int forward;
         // Decide forward
         if (isWhite) {forward = 16;}
@@ -33,24 +36,24 @@ public class Piece {
         if(!isOffBoard(pos+forward) && board[pos+forward] == 0){
             buffer[counter++] = IntegerEncoder.encodeMove(
                     pos, pos+forward, piece, false, 0
-            );
+            , false, false);
             // If pawn has not moved, check the square further forward
             if(!isOffBoard(pos+forward+forward) && board[pos+forward+forward] == 0 && pawnAtStart(isWhite, pos)) {
                 buffer[counter++] = IntegerEncoder.encodeMove(
-                        pos, pos+forward+forward, piece, false, 0
+                        pos, pos+forward+forward, piece, false, 0, false, false
                 );
             }
         }
         // Check if attack is possible
         if(!isOffBoard(pos+forward+1) && (isEnemy(isWhite, board[pos+forward+1]))) {
             buffer[counter++] = IntegerEncoder.encodeMove(
-                    pos, pos+forward+1, piece, true, board[pos+forward+1]
+                    pos, pos+forward+1, piece, true, board[pos+forward+1], false, false
             );
         }
         // Check both possible attacks
         if(!isOffBoard(pos+forward-1) && (isEnemy(isWhite, board[pos+forward-1]))) {
             buffer[counter++] = IntegerEncoder.encodeMove(
-                    pos, pos+forward-1, piece, true, board[pos+forward-1]
+                    pos, pos+forward-1, piece, true, board[pos+forward-1], false, false
             );
         }
 
@@ -63,6 +66,9 @@ public class Piece {
     }
 
     public static int getAllSlidingMoves(boolean isWhite, int pos, int[] board, int[] directions, int[] buffer, int counter) {
+        int piece = board[pos];
+        if(isWhite && !(piece >= 1 && piece <=6)) return counter;
+        if(!isWhite && !(piece >= 9 && piece <=14)) return counter;
         // Check each direction
         for(int direction : directions)
             // Get sliding moves
@@ -78,14 +84,14 @@ public class Piece {
             // If square is empty, encode as a valid move
             if(board[target] == 0){
                 buffer[counter++] = IntegerEncoder.encodeMove(
-                        pos, target, piece, false, 0
+                        pos, target, piece, false, 0, false, false
                 );
                 // Call this method with target as new position
-                counter = getSlidingMoves(isWhite, target, board, direction, buffer, counter);
+                counter = getSlidingMoves(isWhite, pos, board, direction+direction, buffer, counter);
                 // If square is an enemy, encode it
             } else if (isEnemy(isWhite,board[target])){
                 buffer[counter++] = IntegerEncoder.encodeMove(
-                        pos, target, piece, true, board[target]
+                        pos, target, piece, true, board[target], false, false
                 );
             }
         }
@@ -96,6 +102,10 @@ public class Piece {
     public static int getNonSlidingMoves(boolean isWhite, int pos, int[] board, int[] directions, int[] buffer, int counter){
         // Set what piece we are
         int piece = board[pos];
+
+        if(isWhite && !(piece >= 1 && piece <=6)) return counter;
+        if(!isWhite && !(piece >= 9 && piece <=14)) return counter;
+
         // Check each direction
         for(int direction : directions) {
             int target = pos+direction;
@@ -104,12 +114,12 @@ public class Piece {
                 // If square is empty, encode as a valid move
                 if(board[target] == 0){
                     buffer[counter++] = IntegerEncoder.encodeMove(
-                            pos, target, piece, false, 0
+                            pos, target, piece, false, 0, false, false
                     );
                     // If square is an enemy, encode it
                 } else if (isEnemy(isWhite,board[target])){
                     buffer[counter++] = IntegerEncoder.encodeMove(
-                            pos, target, piece, true, board[target]
+                            pos, target, piece, true, board[target], false, false
                     );
                 }
             }
