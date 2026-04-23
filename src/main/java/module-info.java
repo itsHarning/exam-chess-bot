@@ -2,6 +2,7 @@ module dk.ek.chess_bot {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
+    //requires dk.ek.chess_bot;
 
 
     opens dk.ek.chess_bot.engine to javafx.fxml;

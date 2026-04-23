@@ -5,6 +5,21 @@ import dk.ek.chess_bot.engine.pieces.Piece;
 
 import java.sql.Time;
 
+import static dk.ek.chess_bot.engine.Pieces.*;
+import static dk.ek.chess_bot.engine.Pieces.BBISHOP;
+import static dk.ek.chess_bot.engine.Pieces.BKING;
+import static dk.ek.chess_bot.engine.Pieces.BKNIGHT;
+import static dk.ek.chess_bot.engine.Pieces.BPAWN;
+import static dk.ek.chess_bot.engine.Pieces.BQUEEN;
+import static dk.ek.chess_bot.engine.Pieces.BROOK;
+import static dk.ek.chess_bot.engine.Pieces.EMPTY;
+import static dk.ek.chess_bot.engine.Pieces.WBISHOP;
+import static dk.ek.chess_bot.engine.Pieces.WKING;
+import static dk.ek.chess_bot.engine.Pieces.WKNIGHT;
+import static dk.ek.chess_bot.engine.Pieces.WPAWN;
+import static dk.ek.chess_bot.engine.Pieces.WQUEEN;
+import static dk.ek.chess_bot.engine.Pieces.WROOK;
+
 public class Bot {
     static int[] currentBoard;
     static boolean blackCastleKingSide;
@@ -34,6 +49,7 @@ public class Bot {
         halfMoveClock = gameState.getHalfMoveClock();
         if(isWhiteToMove){identity = 0;}else{identity = 8;}
 
+
         //We reset the best move, to purge old info
         bestMoveSoFar = 0;
         nodesSearched = 0; //Amount of nodes searched too
@@ -51,7 +67,7 @@ public class Bot {
 
         for (int i = 0; i < counter; i++) {
             makeMove(possibleMoves[0][i]);
-            int score = alphaBeta(possibleMoves, 0, 5, false, alpha, beta);
+            int score = alphaBeta(possibleMoves, 0, 8, false, alpha, beta);
             unMakeMove(possibleMoves[0][i]);
             if(score > alpha){
                 alpha = score;
@@ -62,8 +78,9 @@ public class Bot {
         makeMove(bestMoveFound);
         System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + nodesSearched + " nodes");
         Board.printBoard(currentBoard);
-        return convertIndexToCoordinates(IntegerEncoder.decodeFromSquare(possibleMoves[0][0]))
-                + convertIndexToCoordinates(IntegerEncoder.decodeToSquare(possibleMoves[0][0]));
+
+
+        return "";
     }
 
     static void makeMove(int move){
@@ -290,7 +307,22 @@ public class Bot {
 
         GameState gameState = new GameState();
 
+        int[] board = new int[] {
+                WROOK,  WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                WPAWN,  WPAWN,   EMPTY,   EMPTY,  EMPTY, WPAWN,   WPAWN,   WPAWN,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                EMPTY,  EMPTY,   WPAWN,   WPAWN,  EMPTY, EMPTY,   EMPTY,   EMPTY,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                EMPTY,  BBISHOP, EMPTY,   EMPTY,  WPAWN, EMPTY,   EMPTY,   BQUEEN,       EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                EMPTY,  EMPTY,   EMPTY,   EMPTY,  BPAWN, EMPTY,   EMPTY,   EMPTY,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                EMPTY,  EMPTY,   EMPTY,   EMPTY,  EMPTY, EMPTY,   EMPTY,   EMPTY,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                BPAWN,  BPAWN,   BPAWN,   BPAWN,  EMPTY, BPAWN,   BPAWN,   BPAWN,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                BROOK,  BKNIGHT, BBISHOP, EMPTY,  BKING, EMPTY,   BKNIGHT, BROOK,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY };
+        Board.printBoard(board);
+        gameState.setWhiteToMove(true);
+        gameState.setCurrentBoard(board);
+
+
         getNextMove(gameState);
+
 
     }
 }
