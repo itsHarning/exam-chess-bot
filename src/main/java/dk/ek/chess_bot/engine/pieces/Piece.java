@@ -87,7 +87,7 @@ public class Piece {
                         pos, target, piece, false, 0, false, false
                 );
                 // Call this method with target as new position
-                counter = getSlidingMoves(isWhite, target, board, direction, buffer, counter);
+                counter = getSlidingMoves(isWhite, pos, board, direction+direction, buffer, counter);
                 // If square is an enemy, encode it
             } else if (isEnemy(isWhite,board[target])){
                 buffer[counter++] = IntegerEncoder.encodeMove(
