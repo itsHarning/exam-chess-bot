@@ -4,7 +4,7 @@ public class Main {
     public static void main(String[] args) {
 
         // Initialises board with FEN string
-        Board board = new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        Board board = new Board();
 
         for (int square = 0; square < 128; square++) {
             if (square % 16 == 0) {
