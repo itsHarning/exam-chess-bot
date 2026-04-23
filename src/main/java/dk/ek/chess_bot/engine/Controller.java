@@ -40,13 +40,13 @@ public class Controller implements Initializable {
 
 	@FXML
 	public void setTurnWhite() {
-		System.out.println("toggle");
+		gameState.setWhiteToMove(!gameState.isWhiteToMove());
         blackTurn.setSelected(!whiteTurn.isSelected());
 	}
 
 	@FXML
 	public void setTurnBlack() {
-		System.out.println("toggle");
+		gameState.setWhiteToMove(!gameState.isWhiteToMove());
         whiteTurn.setSelected(!blackTurn.isSelected());
 	}
 
@@ -109,7 +109,6 @@ public class Controller implements Initializable {
 				if (j == 0 || j == 9 || i == 0 || i == 9) {
 					Text text = new Text();
 					if (j == 0 || j == 9) {
-						// System.out.println(j + ", " + i);
 						text.setText(String.valueOf(i));
 					}
 					if (i == 0 || i == 9) {
@@ -166,13 +165,12 @@ public class Controller implements Initializable {
 							from = square;
 
 							System.out.println("from " + from);
-							System.out.println(board[to]);
+							System.out.println("piece type " + board[to]);
 
 						} else {
 							to = square;
 
 							System.out.println("to " + to);
-							System.out.println(board[to]);
 
 							board[to] = board[from]; // set the piece in its new location
 							board[from] = 0; // sets the place where piece was to empty
@@ -184,7 +182,6 @@ public class Controller implements Initializable {
 							);
 
 							paneToMove.setStyle(paneColour);
-							// paneToMove.setId("0");
 							paneToMove = null;
 
 							gameState.setWhiteToMove(!gameState.isWhiteToMove());
@@ -193,7 +190,6 @@ public class Controller implements Initializable {
 						}
 
 						gameState.setCurrentBoard(board);
-						System.out.println("piece moved");
 					}
 				});
 
