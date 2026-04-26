@@ -2,25 +2,15 @@ package dk.ek.chess_bot.engine;
 
 import dk.ek.chess_bot.engine.pieces.Pawn;
 import dk.ek.chess_bot.engine.pieces.Piece;
+import javafx.concurrent.Task;
 
 import java.sql.Time;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.*;
 
 import static dk.ek.chess_bot.engine.Pieces.*;
-import static dk.ek.chess_bot.engine.Pieces.BBISHOP;
-import static dk.ek.chess_bot.engine.Pieces.BKING;
-import static dk.ek.chess_bot.engine.Pieces.BKNIGHT;
-import static dk.ek.chess_bot.engine.Pieces.BPAWN;
-import static dk.ek.chess_bot.engine.Pieces.BQUEEN;
-import static dk.ek.chess_bot.engine.Pieces.BROOK;
-import static dk.ek.chess_bot.engine.Pieces.EMPTY;
-import static dk.ek.chess_bot.engine.Pieces.WBISHOP;
-import static dk.ek.chess_bot.engine.Pieces.WKING;
-import static dk.ek.chess_bot.engine.Pieces.WKNIGHT;
-import static dk.ek.chess_bot.engine.Pieces.WPAWN;
-import static dk.ek.chess_bot.engine.Pieces.WQUEEN;
-import static dk.ek.chess_bot.engine.Pieces.WROOK;
 
 public class Bot {
     static int[] currentBoard;
@@ -39,32 +29,90 @@ public class Bot {
 
     static int nodesSearched = 0;
 
+
+    static int depthToHit;
+    static GameState deepestGameState;
+
+    static Duration duration = Duration.ofSeconds(2); // Target duration
+    static Instant endTime = Instant.now().plus(duration);
+
+    // TODO deprecated, should remove
     static GameState timedNextMove(GameState gameState) {
-        Duration duration = Duration.ofMillis(500); // Target duration
-        Instant endTime = Instant.now().plus(duration);
+        depthToHit = 1;
+        deepestGameState = gameState;
 
-        System.out.println("Starting loop");
-        System.out.println("Will run for " + duration.toMillis() + "ms..");
+        GameState test = new GameState();
+        test.setCurrentBoard(gameState.getCurrentBoard());
 
-        int depthToHit = 1;
-        GameState deepestGameState = gameState;
+        ExecutorService executor = Executors.newFixedThreadPool(4);
 
-        while (Instant.now().isBefore(endTime)) {
-            System.out.println("Loop Iteration at " + Instant.now());
+        int duration = 500;
 
-            // Board.printBoard(gameState.getCurrentBoard());
+        Future<?> future = executor.submit(() -> {
+            // runs infinitely until stopped
+            while (true) {
+                deepestGameState = getNextMove(test, 2);
 
-            deepestGameState = getNextMove(gameState, depthToHit);
-            System.out.println("Depth " + depthToHit + " finished");
-            depthToHit++;
+                if (Thread.interrupted()) {
+                    return;
+                }
+
+                System.out.println("Depth " + depthToHit + " finished!");
+                depthToHit++;
+            }
+        });
+
+        executor.shutdown(); // Reject all further submissions
+
+        try {
+            future.get(duration, TimeUnit.MILLISECONDS); // Wait 8 seconds to finish
+        } catch (InterruptedException e) { // Possible error cases
+            System.out.println("Job was interrupted");
+        } catch (ExecutionException e ) {
+            System.out.println("Caught exception: " + e.getCause());
+        } catch (TimeoutException e) {
+            future.cancel(true); // Interrupts the job
+            System.out.println("Timeout");
         }
 
+        // Wait for all unfinished tasks
+        try {
+            if(!executor.awaitTermination(50, TimeUnit.MILLISECONDS)) {
+                // force them to quit by interrupting
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+//        Duration duration = Duration.ofMillis(500); // Target duration
+//        Instant endTime = Instant.now().plus(duration);
+//
+//        System.out.println("Starting loop");
+//        System.out.println("Will run for " + duration.toMillis() + "ms..");
+//
+//        int depthToHit = 1;
+//        GameState deepestGameState = gameState;
+//
+//        while (Instant.now().isBefore(endTime)) {
+//            System.out.println("Loop Iteration at " + Instant.now());
+//
+//            // Board.printBoard(gameState.getCurrentBoard());
+//
+//            deepestGameState = getNextMove(gameState, depthToHit);
+//            System.out.println("Depth " + depthToHit + " finished");
+//            depthToHit++;
+//        }
+//
         System.out.println("Loop finished. At depth " + (depthToHit - 1));
 
         return deepestGameState;
     }
 
-    static GameState getNextMove(GameState gameState, int depthToHit) {
+    static GameState getNextMove(GameState gameState, int givenDuration) {
+        duration = Duration.ofSeconds(givenDuration);
+        Instant start = Instant.now();
+        Board.printBoard(gameState.getCurrentBoard());
         currentBoard = gameState.getCurrentBoard();
         blackCastleQueenSide = gameState.isBlackCastleQueenSide();
         blackCastleKingSide = gameState.isBlackCastleKingSide();
@@ -75,45 +123,68 @@ public class Bot {
         totalMoves = gameState.getTotalMoves();
         halfMoveClock = gameState.getHalfMoveClock();
 
+        // identity = (isWhiteToMove) ? 0 : 8;
         if (isWhiteToMove) {
             identity = 0;
         } else {
             identity = 8;
         }
 
-        //We reset the best move, to purge old info
-        bestMoveSoFar = 0;
-        nodesSearched = 0; //Amount of nodes searched too
-
-        int[][] possibleMoves = new int[64][256];
-        int counter = 0;
-        for (int i = 0; i < 128; i++) {
-            counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
-        }
+        int max_depth = 30;
+        GameState newGameState = new GameState();
 
         int bestMoveFound = 0;
-        int alpha = -100000;
-        int beta = 100000;
-
-        for (int i = 0; i < counter; i++) {
-            makeMove(possibleMoves[0][i]);
-            int score = alphaBeta(possibleMoves, 0, depthToHit, false, alpha, beta);
-            unMakeMove(possibleMoves[0][i]);
-            if(score > alpha){
-                alpha = score;
-                bestMoveFound = possibleMoves[0][i];
+        for (int depth = 1; depth <= max_depth; depth++) {
+            System.out.println("Starting depth: " + depth);
+            if (Instant.now().isAfter(endTime)) {
+                System.out.println("Out of time!");
+                break;
             }
+
+            //We reset the best move, to purge old info
+            bestMoveSoFar = 0;
+            nodesSearched = 0; //Amount of nodes searched too
+
+            int[][] possibleMoves = new int[64][256];
+            int counter = 0;
+            for (int i = 0; i < 128; i++) {
+                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
+            }
+
+            int alpha = -100000;
+            int beta = 100000;
+
+            for (int i = 0; i < counter; i++) {
+                makeMove(possibleMoves[0][i]);
+                Integer score = alphaBeta(possibleMoves, 0, depth, false, alpha, beta);
+                unMakeMove(possibleMoves[0][i]);
+                if (score == null) break; // ASK if better way to do
+
+                if (score > alpha) {
+                    alpha = score;
+                    bestMoveFound = possibleMoves[0][i];
+                }
+            }
+
+            if (Instant.now().isAfter(endTime)) {
+                System.out.println("Out of time!");
+                break;
+            }
+            System.out.println("Finished depth: " + depth);
         }
+
         System.out.println("score before: " + Board.getScore(currentBoard, isWhiteToMove));
         makeMove(bestMoveFound);
         System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + nodesSearched + " nodes");
         Board.printBoard(currentBoard);
 
-        GameState newGameState = new GameState();
         newGameState.setWhiteToMove(isWhiteToMove);
         newGameState.setCurrentBoard(currentBoard);
 
+
         System.out.println(Translator.gameStateToFEN(newGameState));
+
+        System.out.println("Time taken: " + ChronoUnit.MILLIS.between(start, Instant.now()) + "ms");
 
         return newGameState;
     }
@@ -258,7 +329,9 @@ public class Bot {
         return fileLetter + rank;
     }
 
-    static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
+    static Integer alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
+        if (Instant.now().isAfter(endTime)) return null; // ASK if better way to do
+
         depth = depth+1; //We start by incrementing the depth
 
         nodesSearched++;
@@ -291,8 +364,9 @@ public class Bot {
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
-                    int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+                    Integer score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
+                    if (score == null) break; // ASK if better way to do
 
                     alpha = Math.max(alpha, score);
                     if (beta <= alpha) {
@@ -312,8 +386,9 @@ public class Bot {
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
-                    int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+                    Integer score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
+                    if (score == null) break; // ASK if better way to do
 
                     beta = Math.min(beta, score);
                     if (beta <= alpha) {
@@ -356,7 +431,7 @@ public class Bot {
         gameState.setCurrentBoard(board);
 
 
-        getNextMove(gameState, 5);
+        getNextMove(gameState, 2);
 
 
     }

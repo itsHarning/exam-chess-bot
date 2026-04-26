@@ -11,6 +11,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -65,8 +67,25 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.timedNextMove(gameState);
-        initBoard();
+		// Board.printBoard(gameState.getCurrentBoard());
+		int duration = 2;
+        gameState = Bot.getNextMove(gameState, duration);
+
+		// CustomThread thread = new CustomThread();
+		//
+		// try {
+		// 	Duration duration = Duration.ofMillis(500);
+		// 	Instant endTime = Instant.now().plus(duration);
+		//
+		// 	Thread.sleep(duration);
+		// 	thread.thread.interrupt();
+		//
+		// } catch (InterruptedException e) {
+		// 	System.out.println("Caught: " + e);
+		// }
+		// System.out.println("Thread finished");
+
+		initBoard();
     }
 
 	@FXML
