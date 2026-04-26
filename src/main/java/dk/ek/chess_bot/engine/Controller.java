@@ -65,7 +65,7 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.getNextMove(gameState);
+        gameState = Bot.timedNextMove(gameState);
         initBoard();
     }
 

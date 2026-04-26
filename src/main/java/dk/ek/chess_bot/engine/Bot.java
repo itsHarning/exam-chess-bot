@@ -4,6 +4,8 @@ import dk.ek.chess_bot.engine.pieces.Pawn;
 import dk.ek.chess_bot.engine.pieces.Piece;
 
 import java.sql.Time;
+import java.time.Duration;
+import java.time.Instant;
 
 import static dk.ek.chess_bot.engine.Pieces.*;
 import static dk.ek.chess_bot.engine.Pieces.BBISHOP;
@@ -37,7 +39,32 @@ public class Bot {
 
     static int nodesSearched = 0;
 
-    static GameState getNextMove(GameState gameState){
+    static GameState timedNextMove(GameState gameState) {
+        Duration duration = Duration.ofMillis(500); // Target duration
+        Instant endTime = Instant.now().plus(duration);
+
+        System.out.println("Starting loop");
+        System.out.println("Will run for " + duration.toMillis() + "ms..");
+
+        int depthToHit = 1;
+        GameState deepestGameState = gameState;
+
+        while (Instant.now().isBefore(endTime)) {
+            System.out.println("Loop Iteration at " + Instant.now());
+
+            // Board.printBoard(gameState.getCurrentBoard());
+
+            deepestGameState = getNextMove(gameState, depthToHit);
+            System.out.println("Depth " + depthToHit + " finished");
+            depthToHit++;
+        }
+
+        System.out.println("Loop finished. At depth " + (depthToHit - 1));
+
+        return deepestGameState;
+    }
+
+    static GameState getNextMove(GameState gameState, int depthToHit) {
         currentBoard = gameState.getCurrentBoard();
         blackCastleQueenSide = gameState.isBlackCastleQueenSide();
         blackCastleKingSide = gameState.isBlackCastleKingSide();
@@ -47,8 +74,12 @@ public class Bot {
         enPassantIndex = gameState.getEnPassantIndex();
         totalMoves = gameState.getTotalMoves();
         halfMoveClock = gameState.getHalfMoveClock();
-        if(isWhiteToMove){identity = 0;}else{identity = 8;}
 
+        if (isWhiteToMove) {
+            identity = 0;
+        } else {
+            identity = 8;
+        }
 
         //We reset the best move, to purge old info
         bestMoveSoFar = 0;
@@ -64,10 +95,9 @@ public class Bot {
         int alpha = -100000;
         int beta = 100000;
 
-
         for (int i = 0; i < counter; i++) {
             makeMove(possibleMoves[0][i]);
-            int score = alphaBeta(possibleMoves, 0, 4, false, alpha, beta);
+            int score = alphaBeta(possibleMoves, 0, depthToHit, false, alpha, beta);
             unMakeMove(possibleMoves[0][i]);
             if(score > alpha){
                 alpha = score;
@@ -83,10 +113,12 @@ public class Bot {
         newGameState.setWhiteToMove(isWhiteToMove);
         newGameState.setCurrentBoard(currentBoard);
 
+        System.out.println(Translator.gameStateToFEN(newGameState));
+
         return newGameState;
     }
 
-    static void makeMove(int move){
+    static void makeMove(int move) {
         //Many cases are appropriate to consider here. First we get the basic info
         int pieceType = IntegerEncoder.decodeOwnPieceType(move);
         if(!isWhiteToMove) pieceType = 0b1000|pieceType;
@@ -324,7 +356,7 @@ public class Bot {
         gameState.setCurrentBoard(board);
 
 
-        getNextMove(gameState);
+        getNextMove(gameState, 5);
 
 
     }
