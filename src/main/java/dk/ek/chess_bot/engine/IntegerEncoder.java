@@ -24,6 +24,7 @@ public class IntegerEncoder {
 
         //Here we need to add the score for the move to the end. Implementation pending
         int score = getScore();
+
         encoded = (score << 24)|encoded;
 
         return encoded;

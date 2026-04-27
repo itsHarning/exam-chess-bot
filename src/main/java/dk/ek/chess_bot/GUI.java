@@ -13,6 +13,9 @@ public class GUI extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUI.class.getResource("board.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1150, 640);
+        String css = this.getClass().getResource("style.css").toExternalForm();
+        System.out.println("Found: " + css);
+        scene.getStylesheets().add(css);
         stage.getIcons().add(new Image(getClass().getResource("/images/icon.png").toExternalForm()));
         stage.setTitle("Chess!");
         stage.setScene(scene);

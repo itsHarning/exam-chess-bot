@@ -1,5 +1,6 @@
 package dk.ek.chess_bot.engine;
 
+import dk.ek.chess_bot.engine.pieces.Piece;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
@@ -11,6 +12,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -98,57 +101,80 @@ public class Controller implements Initializable {
 		whiteTurn.setSelected(gameState.isWhiteToMove());
 		blackTurn.setSelected(!gameState.isWhiteToMove());
 
-		initBoard();
+		buildBoardRep();
+        renderBoard();
 	}
+
+    Pane[][] panes = {
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+            {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
+    };
+
+    Pane clickedPane;
+
+    @FXML
+    public void buildBoardRep(){
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Pane pane = panes[i][j];
+                pane.getStyleClass().add("boardSquare");
+                pane.setPrefSize(80, 80);
+
+                pane.setOnMousePressed((MouseEvent event) -> {
+                    System.out.println("Hello world");
+                    if (clickedPane == null){
+                        System.out.println("You clicked a pane");
+                        clickedPane = pane;
+
+                        setSelectedPaneStyling();
+                    }
+                    else{
+                        System.out.println("You cliced away from a pane");
+                        clickedPane.getStyleClass().remove("clicked");
+                        clickedPane = null;
+                    }
+                });
+            }
+        }
+    }
+
+    public void setSelectedPaneStyling(){
+        clickedPane.getStyleClass().add("clicked");
+    }
 
 	@FXML
 	public void initBoard() {
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < 10; j++) {
-				// sets up coordinates on side of the board
-				if (j == 0 || j == 9 || i == 0 || i == 9) {
-					Text text = new Text();
-					if (j == 0 || j == 9) {
-						text.setText(String.valueOf(i));
-					}
-					if (i == 0 || i == 9) {
-						char letter = 0;
-						switch (j) {
-							case 1 -> letter = 'A';
-							case 2 -> letter = 'B';
-							case 3 -> letter = 'C';
-							case 4 -> letter = 'D';
-							case 5 -> letter = 'E';
-							case 6 -> letter = 'F';
-							case 7 -> letter = 'G';
-							case 8 -> letter = 'H';
-						};
-						text.setText("\t" + letter);
 
-						// TODO get center alignment to work
-						text.setTextAlignment(TextAlignment.CENTER);
-						// text.setWrappingWidth(50);
-						text.wrappingWidthProperty().bind(grid.prefWidthProperty());
-					}
-					grid.add(text, j, i);
-					continue;
-				}
-
-				// changes i/j to fit board coordinates
-				i--;
-				j--;
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
 
 				int[] board = this.gameState.getCurrentBoard();
-				int square = convert0x88(i, j);
+
+				int square = convertTo0x88(i, j);
 				int piece = board[square];
 
-				Pane pane = new Pane();
+				Pane pane = panes[i][j];
 
 				String imageSettings = "-fx-background-size: 80 80;" + "-fx-background-position: center;";
 
 				pane.setOnMousePressed((MouseEvent event) -> {
 					if (event.getButton() == MouseButton.PRIMARY) {
 						if (paneToMove == null) {
+                            int[] moves = new int[64];
+                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
+
+                            for (int k = 0; k < counter; k++) {
+                                int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
+                                System.out.println("Found moves");
+                                System.out.println(targetXY[0] + ", " + targetXY[1]);
+                                panes[7-targetXY[1]][targetXY[0]].setStyle("-fx-stroke: #FF0000; -fx-stroke-width: 5");
+                            }
 
 							String[] splitCSS = pane.getStyle().split("(?<=;)");
 
@@ -192,69 +218,155 @@ public class Controller implements Initializable {
 						gameState.setCurrentBoard(board);
 					}
 				});
-
-				String light = "-fx-background-color: #e8ceab;";
-				String dark = "-fx-background-color: #bc7944;";
-
-				if (piece != 0) {
-                    if (i % 2 == 0) {
-						if (j % 2 == 0) {
-							// light
-							pane.setStyle(
-									light
-									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ imageSettings
-							);
-						} else {
-							// dark
-							pane.setStyle(
-									dark
-									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ imageSettings
-							);
-						}
-					} else {
-						if (j % 2 != 0) {
-							pane.setStyle(
-									light
-									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ imageSettings
-							);
-						} else {
-							pane.setStyle(
-									dark
-									+ "-fx-background-image: url('" + getClass().getResource("/pieces/" + pieceImages[piece]).toExternalForm() + "');"
-									+ imageSettings
-							);
-						}
-					}
-					pane.setId(String.valueOf(piece));
-				} else {
-					if (i % 2 == 0) {
-						if (j % 2 == 0) {
-							pane.setStyle(light);
-						} else {
-							pane.setStyle(dark);
-						}
-					} else {
-						if (j % 2 != 0) {
-							pane.setStyle(light);
-						} else {
-							pane.setStyle(dark);
-						}
-					}
-					pane.setId("0");
-				}
-
-				// changes i/j back to fit for loop
-				i++;
-				j++;
-				grid.add(pane, j, i);
 			}
 		}
+        renderBoard();
 	}
 
-	public int convert0x88(int y, int x) {
+    public void resetStyling(){
+        for(Pane[] paneRow: panes){
+            for(Pane pane: paneRow){
+                pane = new Pane();
+            }
+        }
+    }
+
+    @FXML
+    public void renderBoard(){
+        System.out.println("Rendering board");
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                // sets up coordinates on side of the board
+                if (j == 0 || j == 9 || i == 0 || i == 9) {
+                    Text text = new Text();
+                    if (j == 0 || j == 9) {
+                        text.setText(String.valueOf(7-i));
+                    }
+                    if (i == 0 || i == 9) {
+                        char letter = 0;
+                        switch (j) {
+                            case 1 -> letter = 'A';
+                            case 2 -> letter = 'B';
+                            case 3 -> letter = 'C';
+                            case 4 -> letter = 'D';
+                            case 5 -> letter = 'E';
+                            case 6 -> letter = 'F';
+                            case 7 -> letter = 'G';
+                            case 8 -> letter = 'H';
+                        };
+                        text.setText("\t" + letter);
+
+                        // TODO get center alignment to work
+                        text.setTextAlignment(TextAlignment.CENTER);
+                        // text.setWrappingWidth(50);
+                        text.wrappingWidthProperty().bind(grid.prefWidthProperty());
+                    }
+                    grid.add(text, j, i);
+                    continue;
+                }
+
+                // changes i/j to fit board coordinates
+                i--;
+                j--;
+
+                int[] board = this.gameState.getCurrentBoard();
+                int square = convertTo0x88(i, j);
+                int piece = board[square];
+
+                Pane pane = panes[i][j];
+
+                if (piece != 0) {
+                    if (i % 2 == 0) {
+                        if (j % 2 == 0) {
+                            // light
+                            pane.getStyleClass().add("light");
+                        } else {
+                            pane.getStyleClass().add("dark");
+                        }
+                    } else {
+                        if (j % 2 != 0) {
+                            pane.getStyleClass().add("light");
+                        } else {
+                            pane.getStyleClass().add("dark");
+                        }
+                    }
+                    String pieceType = getPieceTypeString(piece);
+
+                    pane.setStyle(pane.getStyle() + "-fx-background-image: url('" + getClass().getResource("/pieces/" + getPieceTypeString(piece)) + "');");
+
+                    pane.setId(String.valueOf(piece));
+                } else {
+                    pane.getStyleClass().clear();
+                    if (i % 2 == 0) {
+                        if (j % 2 == 0) {
+                            pane.getStyleClass().add("light");
+                        } else {
+                            pane.getStyleClass().add("dark");
+                        }
+                    } else {
+                        if (j % 2 != 0) {
+                            pane.getStyleClass().add("light");
+                        } else {
+                            pane.getStyleClass().add("dark");
+                        }
+                    }
+                    pane.setId("0");
+                }
+
+                // changes i/j back to fit for loop
+                i++;
+                j++;
+                grid.add(pane, j, i);
+            }
+        }
+    }
+
+    String getPieceTypeString(int pieceNr){
+        switch (pieceNr){
+            case 1:
+                return "wP.png";
+            case 2:
+                return "wN.png";
+            case 3:
+                return "wB.png";
+            case 4:
+                return "wR.png";
+            case 5:
+                return "wQ.png";
+            case 6:
+                return "wK.png";
+            case 9:
+                return "bP.png";
+            case 10:
+                return "bN.png";
+            case 11:
+                return "bB.png";
+            case 12:
+                return "bR.png";
+            case 13:
+                return "bQ.png";
+            case 14:
+                return "bK.png";
+        }
+        return "";
+    }
+
+    int convert0x88toGridIndex(int i){
+        //0 = 11 : 16 = 21
+        return convertFrom0x88(i)[0] + (89-(convertFrom0x88(i)[1]*10));
+    }
+
+    int[] convertFrom0x88(int i) {
+        // The row is the index divided by 16
+        int y = i >> 4;
+
+        // The column is the index modulo 16
+        int x = i & 0x07;
+
+        return new int[]{x, y};
+    }
+
+	public int convertTo0x88(int y, int x) {
 		int index = 0;
 		switch (y + 1) {
 		case 1:
