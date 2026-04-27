@@ -2,42 +2,42 @@ package dk.ek.chess_bot.engine;
 
 import dk.ek.chess_bot.engine.pieces.Pawn;
 import dk.ek.chess_bot.engine.pieces.Piece;
+import javafx.concurrent.Task;
 
 import java.sql.Time;
+import java.text.DecimalFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.*;
+import java.util.stream.IntStream;
 
 import static dk.ek.chess_bot.engine.Pieces.*;
-import static dk.ek.chess_bot.engine.Pieces.BBISHOP;
-import static dk.ek.chess_bot.engine.Pieces.BKING;
-import static dk.ek.chess_bot.engine.Pieces.BKNIGHT;
-import static dk.ek.chess_bot.engine.Pieces.BPAWN;
-import static dk.ek.chess_bot.engine.Pieces.BQUEEN;
-import static dk.ek.chess_bot.engine.Pieces.BROOK;
-import static dk.ek.chess_bot.engine.Pieces.EMPTY;
-import static dk.ek.chess_bot.engine.Pieces.WBISHOP;
-import static dk.ek.chess_bot.engine.Pieces.WKING;
-import static dk.ek.chess_bot.engine.Pieces.WKNIGHT;
-import static dk.ek.chess_bot.engine.Pieces.WPAWN;
-import static dk.ek.chess_bot.engine.Pieces.WQUEEN;
-import static dk.ek.chess_bot.engine.Pieces.WROOK;
 
 public class Bot {
-    static int[] currentBoard;
-    static boolean blackCastleKingSide;
-    static boolean blackCastleQueenSide;
-    static boolean whiteCastleKingSide;
-    static boolean whiteCastleQueenSide;
+    private static int[] currentBoard;
+    private static boolean blackCastleKingSide;
+    private static boolean blackCastleQueenSide;
+    private static boolean whiteCastleKingSide;
+    private static boolean whiteCastleQueenSide;
 
-    static boolean isWhiteToMove;
-    static int enPassantIndex;
-    static int totalMoves;
-    static int halfMoveClock;
+    private static boolean isWhiteToMove;
+    private static int enPassantIndex;
+    private static int totalMoves;
+    private static int halfMoveClock;
 
-    static int bestMoveSoFar;
-    static int identity;
+    private static int bestMoveSoFar;
 
-    static int nodesSearched = 0;
+    private static int nodesSearched = 0;
 
-    static GameState getNextMove(GameState gameState){
+    private static Instant endTime;
+
+    static GameState getNextMove(GameState gameState, int givenDuration) {
+        Instant start = Instant.now();
+        // Target duration
+        Duration duration = Duration.ofMillis(givenDuration);
+        endTime = start.plus(duration);
+
         currentBoard = gameState.getCurrentBoard();
         blackCastleQueenSide = gameState.isBlackCastleQueenSide();
         blackCastleKingSide = gameState.isBlackCastleKingSide();
@@ -47,46 +47,72 @@ public class Bot {
         enPassantIndex = gameState.getEnPassantIndex();
         totalMoves = gameState.getTotalMoves();
         halfMoveClock = gameState.getHalfMoveClock();
-        if(isWhiteToMove){identity = 0;}else{identity = 8;}
 
-
-        //We reset the best move, to purge old info
-        bestMoveSoFar = 0;
-        nodesSearched = 0; //Amount of nodes searched too
-
-        int[][] possibleMoves = new int[64][256];
-        int counter = 0;
-        for (int i = 0; i < 128; i++) {
-            counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
-        }
+        int max_depth = 25; // Max depth, if program somehow reaches that before timer runs out
+        GameState newGameState = new GameState();
 
         int bestMoveFound = 0;
-        int alpha = -100000;
-        int beta = 100000;
-
-
-        for (int i = 0; i < counter; i++) {
-            makeMove(possibleMoves[0][i]);
-            int score = alphaBeta(possibleMoves, 0, 6, false, alpha, beta);
-            unMakeMove(possibleMoves[0][i]);
-            if(score > alpha){
-                alpha = score;
-                bestMoveFound = possibleMoves[0][i];
+        for (int depth = 1; depth <= max_depth; depth++) {
+            System.out.println("Starting depth: " + depth);
+            if (!Instant.now().isBefore(endTime)) {
+                System.out.println("Out of time!");
+                break;
             }
+
+            //We reset the best move, to purge old info
+            bestMoveSoFar = 0;
+            nodesSearched = 0; //Amount of nodes searched too
+
+            int[][] possibleMoves = new int[64][256];
+            int counter = 0;
+            for (int i = 0; i < 128; i++) {
+                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
+            }
+
+            int alpha = -100000;
+            int beta = 100_000;
+
+            int nullReturn = -99_999;
+
+            for (int i = 0; i < counter; i++) {
+                makeMove(possibleMoves[0][i]);
+                int score = alphaBeta(possibleMoves, 0, depth, false, alpha, beta);
+                unMakeMove(possibleMoves[0][i]);
+                if (score == nullReturn) break; // ASK if better way to do
+
+                if (score > alpha) {
+                    alpha = score;
+                    bestMoveFound = possibleMoves[0][i];
+                }
+            }
+
+            if (Instant.now().isAfter(endTime)) {
+                System.out.println("Out of time!");
+                break;
+            }
+            System.out.println("Finished depth: " + depth);
         }
+
         System.out.println("score before: " + Board.getScore(currentBoard, isWhiteToMove));
         makeMove(bestMoveFound);
-        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + nodesSearched + " nodes");
+
+        DecimalFormat numberFormatter = new DecimalFormat("#,###");
+        String formattedNodesSearched = numberFormatter.format(nodesSearched).replace(",", ".");
+
+        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + formattedNodesSearched + " nodes");
         Board.printBoard(currentBoard);
 
-        GameState newGameState = new GameState();
         newGameState.setWhiteToMove(isWhiteToMove);
         newGameState.setCurrentBoard(currentBoard);
+
+        System.out.println(Translator.gameStateToFEN(newGameState));
+
+        System.out.println("Time taken: " + ChronoUnit.MILLIS.between(start, Instant.now()) + "ms");
 
         return newGameState;
     }
 
-    static void makeMove(int move){
+    static void makeMove(int move) {
         //Many cases are appropriate to consider here. First we get the basic info
         int pieceType = IntegerEncoder.decodeOwnPieceType(move);
         if(!isWhiteToMove) pieceType = 0b1000|pieceType;
@@ -227,24 +253,38 @@ public class Bot {
     }
 
     static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
+        if (Instant.now().isAfter(endTime)) return -99_999; // ASK if better way to do
+
+        System.out.println(isWhiteToMove);
+        // ASK check if checkmate
+        // TODO temp simple solution
+        boolean whiteKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 6);
+        boolean blackKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 14);
+
+        if(isWhiteToMove && !whiteKingContains) {
+            System.out.println("I imagined white lost");
+            return -1000000 + depth;
+        }
+        if(!isWhiteToMove && !whiteKingContains) {
+            System.out.println("I imagined white won");
+            return 1000000 - depth;
+        }
+        if(isWhiteToMove && !blackKingContains) {
+            System.out.println("I imagined black lost");
+            return 1000000 - depth;
+        }
+        if(!isWhiteToMove && !blackKingContains) {
+            System.out.println("I imagined black won");
+            return -1000000 + depth;
+        }
+
         depth = depth+1; //We start by incrementing the depth
 
         nodesSearched++;
 
-        /*
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-
-        }
-
-         */
-
-
         if(depth == targetDepth){
             return Board.getScore(currentBoard, isWhiteToMove);
         }
-
 
 
         int counter = 0;
@@ -261,6 +301,7 @@ public class Bot {
                     makeMove(move);
                     int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
+                    if (score == -99_999) break; // ASK if better way to do
 
                     alpha = Math.max(alpha, score);
                     if (beta <= alpha) {
@@ -282,6 +323,7 @@ public class Bot {
                     makeMove(move);
                     int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
+                    if (score == -999999) break; // ASK if better way to do
 
                     beta = Math.min(beta, score);
                     if (beta <= alpha) {
@@ -291,18 +333,6 @@ public class Bot {
             }
             return beta;
         }
-    }
-
-    static int getScore(int[] board){
-        return 1; //Implement board heuristic here
-    }
-
-    static void getAllMoves(int[][] buffer, int depth){
-
-        int counter = 0; //Counting variable lets us access the index on the array we have reached
-        counter = Pawn.getMoves(currentBoard, buffer[depth], counter, isWhiteToMove);
-
-
     }
 
     public static void main(String[] args) {
@@ -324,7 +354,7 @@ public class Bot {
         gameState.setCurrentBoard(board);
 
 
-        getNextMove(gameState);
+        getNextMove(gameState, 2);
 
 
     }
