@@ -126,11 +126,24 @@ public class Controller implements Initializable {
                 pane.getStyleClass().add("boardSquare");
                 pane.setPrefSize(80, 80);
 
+                int[] board = this.gameState.getCurrentBoard();
+
+                int square = convertTo0x88(i, j);
+
                 pane.setOnMousePressed((MouseEvent event) -> {
                     System.out.println("Hello world");
                     if (clickedPane == null){
                         System.out.println("You clicked a pane");
                         clickedPane = pane;
+                        int[] moves = new int[64];
+                        int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
+
+                        for (int k = 0; k < counter; k++) {
+                            int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
+                            System.out.println("Found moves");
+                            System.out.println((targetXY[0] +1 ) + ", " + (targetXY[1]+1));
+                            panes[7-targetXY[1]][targetXY[0]].getStyleClass().add("target");
+                        }
 
                         setSelectedPaneStyling();
                     }

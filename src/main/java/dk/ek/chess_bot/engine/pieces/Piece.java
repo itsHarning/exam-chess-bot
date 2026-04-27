@@ -80,7 +80,31 @@ public class Piece {
         int piece = board[pos];
         int target = pos+direction;
         // Check if target square is on the board
-        if(!isOffBoard(target)){
+        while (true) {
+            if(isOffBoard(target)) {
+                System.out.println("IS OFF BOARD");
+                break;
+            }
+            if(isFriend(isWhite, board[target])) {
+                System.out.println("I FOUND MY FRIEND");
+                break;
+            };
+            if (isEnemy(isWhite,board[target])) {
+                buffer[counter++] = IntegerEncoder.encodeMove(
+                        pos, target, piece, true, board[target], false, false
+                );
+                System.out.println("I FOUND AN ENEMY");
+                break;
+            }
+            if(board[target] == 0){
+                System.out.println("The square is empty");
+                buffer[counter++] = IntegerEncoder.encodeMove(
+                        pos, target, piece, false, 0, false, false
+                );
+                target += direction;
+            }
+        }
+        /* if(!isOffBoard(target)){
             // If square is empty, encode as a valid move
             if(board[target] == 0){
                 buffer[counter++] = IntegerEncoder.encodeMove(
@@ -94,7 +118,7 @@ public class Piece {
                         pos, target, piece, true, board[target], false, false
                 );
             }
-        }
+        } */
 
         return counter;
     }
@@ -134,6 +158,14 @@ public class Piece {
         }
         else {
             return pieceToCapture > 0 && pieceToCapture < 7;
+        }
+    }
+    public static boolean isFriend(boolean isWhite, int pieceToCapture) {
+        if(isWhite) {
+            return pieceToCapture > 0 && pieceToCapture < 7;
+        }
+        else {
+            return pieceToCapture > 8 && pieceToCapture < 15;
         }
     }
 

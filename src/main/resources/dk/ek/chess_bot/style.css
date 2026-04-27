@@ -16,6 +16,10 @@
     -fx-background-color: red;
 }
 
+.target{
+    -fx-background-color: yellow;
+}
+
 .wPawn{
     -fx-background-image: url(/pieces/wP.png);
 }
