@@ -67,23 +67,9 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-		// Board.printBoard(gameState.getCurrentBoard());
-		int duration = 2;
-        gameState = Bot.getNextMove(gameState, duration);
-
-		// CustomThread thread = new CustomThread();
-		//
-		// try {
-		// 	Duration duration = Duration.ofMillis(500);
-		// 	Instant endTime = Instant.now().plus(duration);
-		//
-		// 	Thread.sleep(duration);
-		// 	thread.thread.interrupt();
-		//
-		// } catch (InterruptedException e) {
-		// 	System.out.println("Caught: " + e);
-		// }
-		// System.out.println("Thread finished");
+		// TODO get value from gui rather hardcoded
+		int durationInMillisecond = 500;
+        gameState = Bot.getNextMove(gameState, durationInMillisecond);
 
 		initBoard();
     }
