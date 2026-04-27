@@ -9,7 +9,7 @@
         <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
     </padding>
 
-    <GridPane fx:id="grid" maxHeight="640.0" maxWidth="640.0">
+    <GridPane fx:id="grid" alignment="BOTTOM_LEFT" maxHeight="640.0" maxWidth="640.0">
       <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="10.0" />
           <ColumnConstraints hgrow="SOMETIMES" prefWidth="100.0" />
