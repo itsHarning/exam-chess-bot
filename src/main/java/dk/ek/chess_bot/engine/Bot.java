@@ -15,27 +15,27 @@ import java.util.stream.IntStream;
 import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class Bot {
-    static int[] currentBoard;
-    static boolean blackCastleKingSide;
-    static boolean blackCastleQueenSide;
-    static boolean whiteCastleKingSide;
-    static boolean whiteCastleQueenSide;
+    private static int[] currentBoard;
+    private static boolean blackCastleKingSide;
+    private static boolean blackCastleQueenSide;
+    private static boolean whiteCastleKingSide;
+    private static boolean whiteCastleQueenSide;
 
-    static boolean isWhiteToMove;
-    static int enPassantIndex;
-    static int totalMoves;
-    static int halfMoveClock;
+    private static boolean isWhiteToMove;
+    private static int enPassantIndex;
+    private static int totalMoves;
+    private static int halfMoveClock;
 
-    static int bestMoveSoFar;
+    private static int bestMoveSoFar;
 
-    static int nodesSearched = 0;
+    private static int nodesSearched = 0;
 
-    static Duration duration; // Target duration
-    static Instant endTime;
+    private static Instant endTime;
 
     static GameState getNextMove(GameState gameState, int givenDuration) {
         Instant start = Instant.now();
-        duration = Duration.ofMillis(givenDuration);
+        // Target duration
+        Duration duration = Duration.ofMillis(givenDuration);
         endTime = start.plus(duration);
 
         currentBoard = gameState.getCurrentBoard();
@@ -255,21 +255,26 @@ public class Bot {
     static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
         if (Instant.now().isAfter(endTime)) return -99_999; // ASK if better way to do
 
+        System.out.println(isWhiteToMove);
         // ASK check if checkmate
         // TODO temp simple solution
         boolean whiteKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 6);
         boolean blackKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 14);
 
         if(isWhiteToMove && !whiteKingContains) {
+            System.out.println("I imagined white lost");
             return -1000000 + depth;
         }
         if(!isWhiteToMove && !whiteKingContains) {
+            System.out.println("I imagined white won");
             return 1000000 - depth;
         }
         if(isWhiteToMove && !blackKingContains) {
+            System.out.println("I imagined black lost");
             return 1000000 - depth;
         }
         if(!isWhiteToMove && !blackKingContains) {
+            System.out.println("I imagined black won");
             return -1000000 + depth;
         }
 
