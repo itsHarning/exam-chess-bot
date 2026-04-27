@@ -22,15 +22,64 @@ public class IntegerEncoder {
 
         encoded = (capturePieceType<<21)|encoded;
 
-        //Here we need to add the score for the move to the end. Implementation pending
-        int score = getScore();
+        //Here we need to add the score for the move to the end. Implementation pending. 10 is placeholder
+        int score = getScore(10);
         encoded = (score << 24)|encoded;
 
         return encoded;
     }
 
-    static int getScore(){
-        return 10;
+    static int getScore(int move){
+        // centerDist should not live here - need to hear group
+        final int[] centerDist = new int[] {
+                3,3, 3,3, 3,3, 3,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                3,2, 2,2, 2,2, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                3,2, 1,1, 1,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                3,2, 1,0, 0,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                3,2, 1,0, 0,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                3,2, 1,1, 1,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                3,2, 2,2, 2,2, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                3,3, 3,3, 3,3, 3,3, 100, 100, 100, 100, 100, 100, 100, 100,
+        };
+        int score = 0;
+
+        // Center control: fromSquare - toSquare is added to score
+        score += centerDist[decodeFromSquare(move)] - centerDist[decodeToSquare(move)];
+
+        // Oh boy we like castling
+        if(decodeIsCastle(move)) score += 20;
+
+        // Oh boy we love promotions
+        if(decodeIsPromo(move)) score += 30;
+
+        // Attempt at LVA - HVT
+        if(decodeIsCapture(move)) {
+            score += 5;
+            /* Less valuable pieces have a high score
+            King has high score, as king capture suggests king is threatened
+            Scores equal 10 - standard piece score, so pawn = 10 - 1 etc */
+            switch (decodeOwnPieceType(move)) {
+                case 1, 9 -> score += 9;
+                case 2, 10 -> score += 7;
+                case 3, 11 -> score += 7;
+                case 4, 12 -> score += 5;
+                case 5, 13 -> score += 1;
+                case 6, 14 -> score += 10;
+                default -> score = score;
+            };
+            // Captured piece adds extra value based on piece
+            switch (decodeCapturedPieceType(move)) {
+                case 1, 9 -> score += 1;
+                case 2, 10 -> score += 3;
+                case 3, 11 -> score += 3;
+                case 4, 12 -> score += 5;
+                case 5, 13 -> score += 9;
+                case 6, 14 -> score += 100;
+                default -> score = score;
+            };
+        }
+
+        return score;
     }
 
 
