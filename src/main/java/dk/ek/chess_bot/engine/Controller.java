@@ -11,6 +11,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -65,8 +67,11 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.getNextMove(gameState);
-        initBoard();
+		// TODO get value from gui rather hardcoded
+		int durationInMillisecond = 500;
+        gameState = Bot.getNextMove(gameState, durationInMillisecond);
+
+		initBoard();
     }
 
 	@FXML
