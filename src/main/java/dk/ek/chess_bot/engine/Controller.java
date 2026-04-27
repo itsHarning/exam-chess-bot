@@ -69,7 +69,7 @@ public class Controller implements Initializable {
     @FXML
     public void makeMove(){
         gameState = Bot.getNextMove(gameState);
-        initBoard();
+        renderBoard();
     }
 
 	@FXML
@@ -101,9 +101,55 @@ public class Controller implements Initializable {
 		whiteTurn.setSelected(gameState.isWhiteToMove());
 		blackTurn.setSelected(!gameState.isWhiteToMove());
 
+        populateGrid();
 		buildBoardRep();
         renderBoard();
 	}
+
+    public void populateGrid(){
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                // sets up coordinates on side of the board
+                if (j == 0 || j == 9 || i == 0 || i == 9) {
+                    Text text = new Text();
+                    if (j == 0 || j == 9) {
+                        text.setText(String.valueOf(9-i));
+                    }
+                    if (i == 0 || i == 9) {
+                        char letter = 0;
+                        switch (j) {
+                            case 1 -> letter = 'A';
+                            case 2 -> letter = 'B';
+                            case 3 -> letter = 'C';
+                            case 4 -> letter = 'D';
+                            case 5 -> letter = 'E';
+                            case 6 -> letter = 'F';
+                            case 7 -> letter = 'G';
+                            case 8 -> letter = 'H';
+                        };
+                        text.setText("\t" + letter);
+
+                        // TODO get center alignment to work
+                        text.setTextAlignment(TextAlignment.CENTER);
+                        // text.setWrappingWidth(50);
+                        text.wrappingWidthProperty().bind(grid.prefWidthProperty());
+                    }
+                    grid.add(text, j, i);
+                    continue;
+                }
+
+                // changes i/j to fit board coordinates
+                i--;
+                j--;
+
+                Pane pane = panes[i][j];
+
+                i++;
+                j++;
+                grid.add(pane, j, i);
+            }
+        }
+    }
 
     Pane[][] panes = {
             {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
@@ -117,6 +163,8 @@ public class Controller implements Initializable {
     };
 
     Pane clickedPane;
+    int clickedPiece;
+    int fromIndex;
 
     @FXML
     public void buildBoardRep(){
@@ -130,27 +178,39 @@ public class Controller implements Initializable {
 
                 int square = convertTo0x88(i, j);
 
+                int finalI = i;
+                int finalJ = j;
                 pane.setOnMousePressed((MouseEvent event) -> {
-                    System.out.println("Hello world");
                     if (clickedPane == null){
                         System.out.println("You clicked a pane");
-                        clickedPane = pane;
-                        int[] moves = new int[64];
-                        int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
+                        clickedPiece = board[convertTo0x88(finalI, finalJ)];
+                        if(clickedPiece != 0){
+                            System.out.println("You clicked a piece");
+                            fromIndex = convertTo0x88(finalI, finalJ);
+                            clickedPane = pane;
+                            int[] moves = new int[64];
+                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
 
-                        for (int k = 0; k < counter; k++) {
-                            int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
-                            System.out.println("Found moves");
-                            System.out.println((targetXY[0] +1 ) + ", " + (targetXY[1]+1));
-                            panes[7-targetXY[1]][targetXY[0]].getStyleClass().add("target");
+                            for (int k = 0; k < counter; k++) {
+                                int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
+                                System.out.println("Found moves");
+                                System.out.println((targetXY[0] +1 ) + ", " + (targetXY[1]+1));
+                                panes[7-targetXY[1]][targetXY[0]].getStyleClass().add("target");
+                            }
+
+                            setSelectedPaneStyling();
                         }
-
-                        setSelectedPaneStyling();
                     }
                     else{
                         System.out.println("You cliced away from a pane");
                         clickedPane.getStyleClass().remove("clicked");
+
+                        board[convertTo0x88(finalI,finalJ)] = clickedPiece;
+                        board[fromIndex] = 0;
                         clickedPane = null;
+                        clickedPiece = 0;
+                        renderBoard();
+
                     }
                 });
             }
@@ -247,46 +307,17 @@ public class Controller implements Initializable {
     @FXML
     public void renderBoard(){
         System.out.println("Rendering board");
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                // sets up coordinates on side of the board
-                if (j == 0 || j == 9 || i == 0 || i == 9) {
-                    Text text = new Text();
-                    if (j == 0 || j == 9) {
-                        text.setText(String.valueOf(7-i));
-                    }
-                    if (i == 0 || i == 9) {
-                        char letter = 0;
-                        switch (j) {
-                            case 1 -> letter = 'A';
-                            case 2 -> letter = 'B';
-                            case 3 -> letter = 'C';
-                            case 4 -> letter = 'D';
-                            case 5 -> letter = 'E';
-                            case 6 -> letter = 'F';
-                            case 7 -> letter = 'G';
-                            case 8 -> letter = 'H';
-                        };
-                        text.setText("\t" + letter);
-
-                        // TODO get center alignment to work
-                        text.setTextAlignment(TextAlignment.CENTER);
-                        // text.setWrappingWidth(50);
-                        text.wrappingWidthProperty().bind(grid.prefWidthProperty());
-                    }
-                    grid.add(text, j, i);
-                    continue;
-                }
-
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 // changes i/j to fit board coordinates
-                i--;
-                j--;
-
                 int[] board = this.gameState.getCurrentBoard();
                 int square = convertTo0x88(i, j);
                 int piece = board[square];
 
                 Pane pane = panes[i][j];
+
+                pane.getStyleClass().clear();
+                pane.getStyleClass().add("boardSquare");
 
                 if (piece != 0) {
                     if (i % 2 == 0) {
@@ -303,9 +334,9 @@ public class Controller implements Initializable {
                             pane.getStyleClass().add("dark");
                         }
                     }
-                    String pieceType = getPieceTypeString(piece);
 
-                    pane.setStyle(pane.getStyle() + "-fx-background-image: url('" + getClass().getResource("/pieces/" + getPieceTypeString(piece)) + "');");
+                    //pane.setStyle(pane.getStyle() + "-fx-background-image: url('" + getClass().getResource("/pieces/" + getPieceTypeString(piece)) + "');");
+                    pane.getStyleClass().add(getPieceTypeString(piece));
 
                     pane.setId(String.valueOf(piece));
                 } else {
@@ -325,11 +356,6 @@ public class Controller implements Initializable {
                     }
                     pane.setId("0");
                 }
-
-                // changes i/j back to fit for loop
-                i++;
-                j++;
-                grid.add(pane, j, i);
             }
         }
     }
@@ -337,29 +363,29 @@ public class Controller implements Initializable {
     String getPieceTypeString(int pieceNr){
         switch (pieceNr){
             case 1:
-                return "wP.png";
+                return "wPawn";
             case 2:
-                return "wN.png";
+                return "wKnight";
             case 3:
-                return "wB.png";
+                return "wBishop";
             case 4:
-                return "wR.png";
+                return "wRook";
             case 5:
-                return "wQ.png";
+                return "wQueen";
             case 6:
-                return "wK.png";
+                return "wKing";
             case 9:
-                return "bP.png";
+                return "bPawn";
             case 10:
-                return "bN.png";
+                return "bKnight";
             case 11:
-                return "bB.png";
+                return "bBishop";
             case 12:
-                return "bR.png";
+                return "bRook";
             case 13:
-                return "bQ.png";
+                return "bQueen";
             case 14:
-                return "bK.png";
+                return "bKing";
         }
         return "";
     }

@@ -82,22 +82,18 @@ public class Piece {
         // Check if target square is on the board
         while (true) {
             if(isOffBoard(target)) {
-                System.out.println("IS OFF BOARD");
                 break;
             }
             if(isFriend(isWhite, board[target])) {
-                System.out.println("I FOUND MY FRIEND");
                 break;
             };
             if (isEnemy(isWhite,board[target])) {
                 buffer[counter++] = IntegerEncoder.encodeMove(
                         pos, target, piece, true, board[target], false, false
                 );
-                System.out.println("I FOUND AN ENEMY");
                 break;
             }
             if(board[target] == 0){
-                System.out.println("The square is empty");
                 buffer[counter++] = IntegerEncoder.encodeMove(
                         pos, target, piece, false, 0, false, false
                 );

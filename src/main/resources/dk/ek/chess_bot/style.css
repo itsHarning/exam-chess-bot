@@ -21,38 +21,39 @@
 }
 
 .wPawn{
-    -fx-background-image: url(/pieces/wP.png);
+    -fx-background-image: url(../../../pieces/wP.png);
 }
 .bPawn{
-    -fx-background-image: url(/pieces/bP.png);
+    -fx-background-image: url(../../../pieces/bP.png);
 }
+
 .wKnight{
-    -fx-background-image: url(/pieces/wN.png);
+    -fx-background-image: url(../../../pieces/wN.png);
 }
 .bKnight{
-    -fx-background-image: url(/pieces/bN.png);
+    -fx-background-image: url(../../../pieces/bN.png);
 }
 .wBishop{
-    -fx-background-image: url(/pieces/wB.png);
+    -fx-background-image: url(../../../pieces/wB.png);
 }
 .bBishop{
-    -fx-background-image: url(/pieces/bB.png);
+    -fx-background-image: url(../../../pieces/bB.png);
 }
 .wRook{
-    -fx-background-image: url(/pieces/wR.png);
+    -fx-background-image: url(../../../pieces/wR.png);
 }
 .bRook{
-    -fx-background-image: url(/pieces/bR.png);
+    -fx-background-image: url(../../../pieces/bR.png);
 }
 .wQueen{
-    -fx-background-image: url(/pieces/wQ.png);
+    -fx-background-image: url(../../../pieces/wQ.png);
 }
 .bQueen{
-    -fx-background-image: url(/pieces/bQ.png);
+    -fx-background-image: url(../../../pieces/bQ.png);
 }
 .wKing{
-    -fx-background-image: url(/pieces/wK.png);
+    -fx-background-image: url(../../../pieces/wK.png);
 }
 .bKing{
-    -fx-background-image: url(/pieces/bK.png);
+    -fx-background-image: url(../../../pieces/bK.png);
 }
