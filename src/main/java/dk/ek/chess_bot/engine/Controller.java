@@ -40,6 +40,10 @@ public class Controller implements Initializable {
     private int from;
 	private int to;
 
+    Pane clickedPane;
+    int clickedPiece;
+    int fromIndex;
+
 	private GameState gameState;
     private LinkedList<String> history = new LinkedList<>();
     private int historyPointer = 0;
@@ -55,6 +59,17 @@ public class Controller implements Initializable {
 		gameState.setWhiteToMove(!gameState.isWhiteToMove());
         whiteTurn.setSelected(!blackTurn.isSelected());
 	}
+
+    public void swapTurn(){
+        System.out.println("Swapping the turn!");
+        if (gameState.isWhiteToMove()){
+            whiteTurn.setSelected(true);
+            blackTurn.setSelected(false);
+        }else{
+            blackTurn.setSelected(true);
+            whiteTurn.setSelected(false);
+        }
+    }
 
 	@FXML
 	public void FENToBoard() {
@@ -74,6 +89,7 @@ public class Controller implements Initializable {
         gameState = Bot.getNextMove(gameState, 1000);
         history.add(Translator.gameStateToFEN(gameState));
         historyPointer++;
+        swapTurn();
 
         renderBoard();
     }
@@ -169,9 +185,6 @@ public class Controller implements Initializable {
             {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
     };
 
-    Pane clickedPane;
-    int clickedPiece;
-    int fromIndex;
 
     @FXML
     public void buildBoardRep(){
@@ -218,6 +231,8 @@ public class Controller implements Initializable {
                         gameState.setCurrentBoard(board);
                         history.add(Translator.gameStateToFEN(gameState));
                         historyPointer++;
+                        gameState.setWhiteToMove(!gameState.isWhiteToMove());
+                        swapTurn();
 
                         clickedPane = null;
                         clickedPiece = 0;
@@ -308,13 +323,6 @@ public class Controller implements Initializable {
         renderBoard();
 	}
 
-    public void resetStyling(){
-        for(Pane[] paneRow: panes){
-            for(Pane pane: paneRow){
-                pane = new Pane();
-            }
-        }
-    }
     @FXML
     public void revertGameState(){
         System.out.println("Reverting game state");
@@ -414,11 +422,6 @@ public class Controller implements Initializable {
                 return "bKing";
         }
         return "";
-    }
-
-    int convert0x88toGridIndex(int i){
-        //0 = 11 : 16 = 21
-        return convertFrom0x88(i)[0] + (89-(convertFrom0x88(i)[1]*10));
     }
 
     int[] convertFrom0x88(int i) {
