@@ -52,5 +52,6 @@
          </children>
       </HBox>
       <Button mnemonicParsing="false" onAction="#makeMove" text="MakeMove" />
+      <Button mnemonicParsing="false" onAction="#revertGameState" style="-fx-translate-y: 10;" text="Undo Move" />
     </VBox>
 </HBox>
