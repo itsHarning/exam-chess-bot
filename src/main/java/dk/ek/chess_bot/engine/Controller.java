@@ -318,11 +318,16 @@ public class Controller implements Initializable {
     @FXML
     public void revertGameState(){
         System.out.println("Reverting game state");
-        historyPointer --;
-        gameState = Translator.gameStateFromFEN(history.get(historyPointer));
-        history.removeLast();
-        buildBoardRep();
-        renderBoard();
+        if (historyPointer>0) {
+            historyPointer--;
+            gameState = Translator.gameStateFromFEN(history.get(historyPointer));
+            history.removeLast();
+            buildBoardRep();
+            renderBoard();
+        }
+        else {
+            System.out.println("You have reached the beginning of the history.");
+        }
     }
 
     @FXML
