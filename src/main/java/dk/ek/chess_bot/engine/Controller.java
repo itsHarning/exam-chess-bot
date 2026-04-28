@@ -12,6 +12,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -40,6 +41,8 @@ public class Controller implements Initializable {
 	private int to;
 
 	private GameState gameState;
+    private LinkedList<String> history = new LinkedList<>();
+    private int historyPointer = 0;
 
 	@FXML
 	public void setTurnWhite() {
@@ -68,7 +71,10 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.getNextMove(gameState);
+        gameState = Bot.getNextMove(gameState, 1000);
+        history.add(Translator.gameStateToFEN(gameState));
+        historyPointer++;
+
         renderBoard();
     }
 
@@ -98,6 +104,7 @@ public class Controller implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		this.gameState = new GameState();
+        history.add(Translator.gameStateToFEN(gameState));
 		whiteTurn.setSelected(gameState.isWhiteToMove());
 		blackTurn.setSelected(!gameState.isWhiteToMove());
 
@@ -207,6 +214,11 @@ public class Controller implements Initializable {
 
                         board[convertTo0x88(finalI,finalJ)] = clickedPiece;
                         board[fromIndex] = 0;
+
+                        gameState.setCurrentBoard(board);
+                        history.add(Translator.gameStateToFEN(gameState));
+                        historyPointer++;
+
                         clickedPane = null;
                         clickedPiece = 0;
                         renderBoard();
@@ -302,6 +314,15 @@ public class Controller implements Initializable {
                 pane = new Pane();
             }
         }
+    }
+    @FXML
+    public void revertGameState(){
+        System.out.println("Reverting game state");
+        historyPointer --;
+        gameState = Translator.gameStateFromFEN(history.get(historyPointer));
+        history.removeLast();
+        buildBoardRep();
+        renderBoard();
     }
 
     @FXML
