@@ -15,7 +15,12 @@ public class MoveOrdering {
             15,15, 15,15, 15,15, 15,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
     };
 
-    static int getScore(int move){
+    static int encodeScore(int move) {
+        int score = calcScoreOfMove(move);
+        return (score << 24)|move;
+    }
+
+    static int calcScoreOfMove(int move){
         int score = 0;
 
         // Center control: fromSquare - toSquare is added to score
