@@ -29,17 +29,19 @@ public class IntegerEncoder {
         return encoded;
     }
 
+
     static int getScore(int move){
+        /*
         // centerDist should not live here - need to hear group
         final int[] centerDist = new int[] {
-                3,3, 3,3, 3,3, 3,3, 100, 100, 100, 100, 100, 100, 100, 100,
-                3,2, 2,2, 2,2, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
-                3,2, 1,1, 1,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
-                3,2, 1,0, 0,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
-                3,2, 1,0, 0,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
-                3,2, 1,1, 1,1, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
-                3,2, 2,2, 2,2, 2,3, 100, 100, 100, 100, 100, 100, 100, 100,
-                3,3, 3,3, 3,3, 3,3, 100, 100, 100, 100, 100, 100, 100, 100,
+                15,15, 15,15, 15,15, 15,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
+                15,10, 10,10, 10,10, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
+                15,10,  5, 5,  5, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
+                15,10,  5, 0,  0, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
+                15,10,  5, 0,  0, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
+                15,10,  5, 5,  5, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
+                15,10, 10,10, 10,10, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
+                15,15, 15,15, 15,15, 15,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
         };
         int score = 0;
 
@@ -47,40 +49,38 @@ public class IntegerEncoder {
         score += centerDist[decodeFromSquare(move)] - centerDist[decodeToSquare(move)];
 
         // Oh boy we like castling
-        if(decodeIsCastle(move)) score += 20;
+        if(decodeIsCastle(move)) score += 50;
 
         // Oh boy we love promotions
-        if(decodeIsPromo(move)) score += 30;
+        if(decodeIsPromo(move)) score += 200;
 
         // Attempt at LVA - HVT
         if(decodeIsCapture(move)) {
-            score += 5;
-            /* Less valuable pieces have a high score
-            King has high score, as king capture suggests king is threatened
-            Scores equal 10 - standard piece score, so pawn = 10 - 1 etc */
-            switch (decodeOwnPieceType(move)) {
-                case 1, 9 -> score += 9;
-                case 2, 10 -> score += 7;
-                case 3, 11 -> score += 7;
-                case 4, 12 -> score += 5;
-                case 5, 13 -> score += 1;
-                case 6, 14 -> score += 10;
-                default -> score = score;
-            };
-            // Captured piece adds extra value based on piece
-            switch (decodeCapturedPieceType(move)) {
-                case 1, 9 -> score += 1;
-                case 2, 10 -> score += 3;
-                case 3, 11 -> score += 3;
-                case 4, 12 -> score += 5;
-                case 5, 13 -> score += 9;
-                case 6, 14 -> score += 100;
-                default -> score = score;
-            };
-        }
+            // Get value of own piece
+            int ownValue = pieceValue(decodeOwnPieceType(move));
+            // Get value of enemy piece
+            int enemyValue = pieceValue(decodeCapturedPieceType(move));
 
-        return score;
+            // Flat 100 for capture, extra based on enemy value and own value
+            score += 100 + (10 * enemyValue - ownValue);
+        } */
+
+        return 10;
     }
+
+    /*
+    static int pieceValue(int piece){
+        return switch (piece) {
+            case 1 -> 1;
+            case 2 -> 3;
+            case 3 -> 3;
+            case 4 -> 5;
+            case 5 -> 9;
+            case 6 -> 20;
+            default -> 0;
+        };
+    }
+     */
 
 
     public static int decodeFromSquare(int encodedInt) {
