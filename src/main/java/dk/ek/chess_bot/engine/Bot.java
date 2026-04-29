@@ -94,7 +94,7 @@ public class Bot {
                 break;
             }
             bestMoveFoundInPrevious = bestMoveFound;
-            System.out.println("Finished depth: " + depth);
+            System.out.println("Finished depth: " + depth + ", it took " + ChronoUnit.MILLIS.between(start, Instant.now()) + "ms");
         }
 
         System.out.println("score before: " + Board.getScore(currentBoard, botIsWhite));
