@@ -284,11 +284,14 @@ public class Bot {
 
         int counter = 0;
 
-        System.out.println("is max:" + isMax);
+        System.out.println("is max: " + isMax);
         if (isMax) {
+            Board.printBoard(currentBoard);
             // Makes all possible moves and puts them in moveList
             // possible moves are counted and put in counter, as using moveList.length would always return the same number
             counter = getMoveList(moveList[depth]);
+
+            boolean isLegalMove = false;
 
             // Simulates moves
             for (int i = 0; i < counter; i++) {
@@ -297,10 +300,17 @@ public class Bot {
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
-                    System.out.println("max, going to min");
-                    int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+
+                    int score = -99_000;
+                    if (ThreatDetector.isKingInCheck(currentBoard, botIsWhite)) {
+                        System.out.println("max, going to min");
+                        isLegalMove = true;
+                        score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+                    } else System.out.println("not legal");
                     unMakeMove(move);
+
                     if (score == -99_999) break;
+                    if (score == -99_000) continue;
 
                     alpha = Math.max(alpha, score);
                     if (beta <= alpha) {
@@ -309,6 +319,8 @@ public class Bot {
                     }
                 }
             }
+            if (!isLegalMove) System.out.println("no legal moves, max");
+
             System.out.println("alpha, no cut");
             return alpha;
         }
@@ -317,6 +329,8 @@ public class Bot {
             // possible moves are counted and put in counter, as using moveList.length would always return the same number
             counter = getMoveList(moveList[depth]);
 
+            boolean isLegalMove = false;
+
             // Simulates moves
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
@@ -324,10 +338,16 @@ public class Bot {
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
-                    System.out.println("min, going to max");
-                    int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+                    int score = -99_000;
+                    if (ThreatDetector.isKingInCheck(currentBoard, botIsWhite)) {
+                        System.out.println("min, going to max");
+                        isLegalMove = true;
+                        score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+                    } else System.out.println("not legal");
                     unMakeMove(move);
-                    if (score == -99_9999) break;
+
+                    if (score == -99_999) break;
+                    if (score == -99_000) continue;
 
                     beta = Math.min(beta, score);
                     if (beta <= alpha) {
@@ -336,6 +356,8 @@ public class Bot {
                     }
                 }
             }
+            if (!isLegalMove) System.out.println("no legal moves, min");
+
             System.out.println("beta, no cutting");
             return beta;
         }
