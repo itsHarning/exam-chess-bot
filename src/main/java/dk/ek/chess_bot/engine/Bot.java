@@ -25,6 +25,7 @@ public class Bot {
     private static int enPassantIndex;
     private static int totalMoves;
     private static int halfMoveClock;
+    private static boolean botIsWhite;
 
     private static int bestMoveSoFar;
 
@@ -48,9 +49,11 @@ public class Bot {
         totalMoves = gameState.getTotalMoves();
         halfMoveClock = gameState.getHalfMoveClock();
 
+        botIsWhite = gameState.isWhiteToMove();
+
         int max_depth = 25; // Max depth, if program somehow reaches that before timer runs out
         GameState newGameState = new GameState();
-
+        int bestMoveFoundInPrevious = 0;
         int bestMoveFound = 0;
         for (int depth = 1; depth <= max_depth; depth++) {
             System.out.println("Starting depth: " + depth);
@@ -90,16 +93,17 @@ public class Bot {
                 System.out.println("Out of time!");
                 break;
             }
-            System.out.println("Finished depth: " + depth);
+            bestMoveFoundInPrevious = bestMoveFound;
+            System.out.println("Finished depth: " + depth + ", it took " + ChronoUnit.MILLIS.between(start, Instant.now()) + "ms");
         }
 
-        System.out.println("score before: " + Board.getScore(currentBoard, isWhiteToMove));
-        makeMove(bestMoveFound);
+        System.out.println("score before: " + Board.getScore(currentBoard, botIsWhite));
+        makeMove(bestMoveFoundInPrevious);
 
         DecimalFormat numberFormatter = new DecimalFormat("#,###");
         String formattedNodesSearched = numberFormatter.format(nodesSearched).replace(",", ".");
 
-        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + formattedNodesSearched + " nodes");
+        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !botIsWhite) + " having searched: " + formattedNodesSearched + " nodes");
         Board.printBoard(currentBoard);
 
         newGameState.setWhiteToMove(isWhiteToMove);
@@ -255,27 +259,18 @@ public class Bot {
     static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
         if (Instant.now().isAfter(endTime)) return -99_999; // ASK if better way to do
 
-        System.out.println(isWhiteToMove);
         // ASK check if checkmate
         // TODO temp simple solution
         boolean whiteKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 6);
         boolean blackKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 14);
 
-        if(isWhiteToMove && !whiteKingContains) {
-            System.out.println("I imagined white lost");
-            return -1000000 + depth;
+        if(!blackKingContains){ //White has won
+            if (botIsWhite) return 100000-depth; //If the bot is white (The maximizer) Return a HIGH value
+            else return -100000 + depth; //If the bot is playing as black, and white is the minimizer, return a LOW value
         }
-        if(!isWhiteToMove && !whiteKingContains) {
-            System.out.println("I imagined white won");
-            return 1000000 - depth;
-        }
-        if(isWhiteToMove && !blackKingContains) {
-            System.out.println("I imagined black lost");
-            return 1000000 - depth;
-        }
-        if(!isWhiteToMove && !blackKingContains) {
-            System.out.println("I imagined black won");
-            return -1000000 + depth;
+        if(!whiteKingContains){ //Black has won
+            if (botIsWhite) return -100000 + depth; //If the bot is white (The maximizer) Return a LOW value
+            else return 100000 - depth; //If the bot is playing as black, and white is the minimizer, return a HIGH value
         }
 
         depth = depth+1; //We start by incrementing the depth
@@ -283,7 +278,7 @@ public class Bot {
         nodesSearched++;
 
         if(depth == targetDepth){
-            return Board.getScore(currentBoard, isWhiteToMove);
+            return Board.getScore(currentBoard, botIsWhite);
         }
 
 
