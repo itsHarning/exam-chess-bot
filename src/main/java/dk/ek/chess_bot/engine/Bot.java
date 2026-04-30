@@ -265,12 +265,12 @@ public class Bot {
         boolean blackKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 14);
 
         if(!blackKingContains){ //White has won
-            if (botIsWhite) return 100000-depth; //If the bot is white (The maximizer) Return a HIGH value
-            else return -100000 + depth; //If the bot is playing as black, and white is the minimizer, return a LOW value
+            if (botIsWhite) return 10_0000 - depth; //If the bot is white (The maximizer) Return a HIGH value
+            else return -10_0000 + depth; //If the bot is playing as black, and white is the minimizer, return a LOW value
         }
         if(!whiteKingContains){ //Black has won
-            if (botIsWhite) return -100000 + depth; //If the bot is white (The maximizer) Return a LOW value
-            else return 100000 - depth; //If the bot is playing as black, and white is the minimizer, return a HIGH value
+            if (botIsWhite) return -10_0000 + depth; //If the bot is white (The maximizer) Return a LOW value
+            else return 10_0000 - depth; //If the bot is playing as black, and white is the minimizer, return a HIGH value
         }
 
         depth = depth+1; //We start by incrementing the depth
@@ -278,56 +278,75 @@ public class Bot {
         nodesSearched++;
 
         if(depth == targetDepth){
+            System.out.println("leaf");
             return Board.getScore(currentBoard, botIsWhite);
         }
 
-
         int counter = 0;
 
-        if(isMax){
-            for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
-            }
+        System.out.println("is max:" + isMax);
+        if (isMax) {
+            // Makes all possible moves and puts them in moveList
+            // possible moves are counted and put in counter, as using moveList.length would always return the same number
+            counter = getMoveList(moveList[depth]);
+
+            // Simulates moves
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
 
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
+                    System.out.println("max, going to min");
                     int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
-                    if (score == -99_999) break; // ASK if better way to do
+                    if (score == -99_999) break;
 
                     alpha = Math.max(alpha, score);
                     if (beta <= alpha) {
+                        System.out.println("alpha cutoff");
                         return alpha;
                     }
                 }
             }
+            System.out.println("alpha, no cut");
             return alpha;
         }
-        else{
-            for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
-            }
+        else {
+            // Makes all possible moves and puts them in moveList
+            // possible moves are counted and put in counter, as using moveList.length would always return the same number
+            counter = getMoveList(moveList[depth]);
+
+            // Simulates moves
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
 
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
+                    System.out.println("min, going to max");
                     int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
-                    if (score == -999999) break; // ASK if better way to do
+                    if (score == -99_9999) break;
 
                     beta = Math.min(beta, score);
                     if (beta <= alpha) {
+                        System.out.println("beta cutoff");
                         return beta;
                     }
                 }
             }
+            System.out.println("beta, no cutting");
             return beta;
         }
+    }
+
+    private static int getMoveList(int[] moveList) {
+        int counter = 0;
+        for (int i = 0; i < 128; i++) {
+            counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList, counter);
+        }
+        return counter;
     }
 
     public static void main(String[] args) {
