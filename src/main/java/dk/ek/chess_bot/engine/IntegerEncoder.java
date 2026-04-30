@@ -68,21 +68,6 @@ public class IntegerEncoder {
         return 10;
     }
 
-    /*
-    static int pieceValue(int piece){
-        return switch (piece) {
-            case 1 -> 1;
-            case 2 -> 3;
-            case 3 -> 3;
-            case 4 -> 5;
-            case 5 -> 9;
-            case 6 -> 20;
-            default -> 0;
-        };
-    }
-     */
-
-
     public static int decodeFromSquare(int encodedInt) {
         return encodedInt&0x7F;
     }

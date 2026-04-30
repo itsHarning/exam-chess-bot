@@ -293,8 +293,27 @@ public class Bot {
             for (int i = 0; i < 128; i++) {
                 counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
+
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
+                int currentBestMove = moveList[depth][i];
+                int currentMax = IntegerEncoder.getScore(moveList[depth][i]);
+
+                if (true){
+                    for(int j = i+1; j < counter; j++){
+                        int currentMove = moveList[depth][j];
+                        int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
+                        if (currentMoveScore > currentMax) {
+                            // If current move is new max, switch with old fake max
+                            moveList[depth][i] = currentMove;
+                            moveList[depth][j] = currentBestMove;
+                            currentBestMove = currentMove;
+                            // Also set new REAL max
+                            currentMax = currentMoveScore;
+                        }
+                }
+                }
+
 
                 int move = moveList[depth][i];
                 if (move != 0) {
