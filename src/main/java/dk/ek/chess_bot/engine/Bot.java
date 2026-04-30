@@ -32,6 +32,7 @@ public class Bot {
     private static int nodesSearched = 0;
 
     private static Instant endTime;
+    static boolean ordering=false;
 
     static GameState getNextMove(GameState gameState, int givenDuration) {
         Instant start = Instant.now();
@@ -51,7 +52,7 @@ public class Bot {
 
         botIsWhite = gameState.isWhiteToMove();
 
-        int max_depth = 25; // Max depth, if program somehow reaches that before timer runs out
+        int max_depth = 8; // Max depth, if program somehow reaches that before timer runs out
         GameState newGameState = new GameState();
         int bestMoveFoundInPrevious = 0;
         int bestMoveFound = 0;
@@ -294,7 +295,7 @@ public class Bot {
                 int currentBestMove = moveList[depth][i];
                 int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
 
-                if (true){
+                if (ordering){
                     for(int j = i+1; j < counter; j++){
                         int currentMove = moveList[depth][j];
                         int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
@@ -331,6 +332,23 @@ public class Bot {
             }
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
+                int currentBestMove = moveList[depth][i];
+                int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
+
+                if (ordering){
+                    for(int j = i+1; j < counter; j++){
+                        int currentMove = moveList[depth][j];
+                        int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
+                        if (currentMoveScore > currentMax) {
+                            // If current move is new max, switch with old fake max
+                            moveList[depth][i] = currentMove;
+                            moveList[depth][j] = currentBestMove;
+                            currentBestMove = currentMove;
+                            // Also set new REAL max
+                            currentMax = currentMoveScore;
+                        }
+                    }
+                }
 
                 int move = moveList[depth][i];
                 if (move != 0) {
