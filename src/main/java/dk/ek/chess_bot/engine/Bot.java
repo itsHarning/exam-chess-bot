@@ -297,7 +297,7 @@ public class Bot {
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
                 int currentBestMove = moveList[depth][i];
-                int currentMax = IntegerEncoder.getScore(moveList[depth][i]);
+                int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
 
                 if (true){
                     for(int j = i+1; j < counter; j++){
@@ -311,7 +311,7 @@ public class Bot {
                             // Also set new REAL max
                             currentMax = currentMoveScore;
                         }
-                }
+                    }
                 }
 
 

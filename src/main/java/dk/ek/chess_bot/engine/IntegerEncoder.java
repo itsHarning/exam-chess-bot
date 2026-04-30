@@ -23,36 +23,41 @@ public class IntegerEncoder {
         encoded = (capturePieceType<<21)|encoded;
 
         //Here we need to add the score for the move to the end. Implementation pending. 10 is placeholder
-        int score = getScore(10);
-        encoded = (score << 24)|encoded;
+        encodeScore(encoded);
 
         return encoded;
     }
 
 
-    static int getScore(int move){
-        /*
-        // centerDist should not live here - need to hear group
-        final int[] centerDist = new int[] {
-                15,15, 15,15, 15,15, 15,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                15,10, 10,10, 10,10, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                15,10,  5, 5,  5, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                15,10,  5, 0,  0, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                15,10,  5, 0,  0, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                15,10,  5, 5,  5, 5, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                15,10, 10,10, 10,10, 10,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-                15,15, 15,15, 15,15, 15,15, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000,
-        };
+    static int encodeScore(int move) {
+        int score = calcScoreOfMove(move);
+        return (score << 24)|move;
+    }
+
+    static final int[] centerDist = new int[] {
+            3,3, 3,3, 3,3, 3,3,     0, 0, 0, 0, 0, 0, 0, 0,
+            3,2, 2,2, 2,2, 2,3,     0, 0, 0, 0, 0, 0, 0, 0,
+            3,2, 1,1, 1,1, 2,3,     0, 0, 0, 0, 0, 0, 0, 0,
+            3,2, 1,0, 0,1, 2,3,     0, 0, 0, 0, 0, 0, 0, 0,
+            3,2, 1,0, 0,1, 2,3,     0, 0, 0, 0, 0, 0, 0, 0,
+            3,2, 1,1, 1,1, 2,3,     0, 0, 0, 0, 0, 0, 0, 0,
+            3,2, 2,2, 2,2, 2,3,     0, 0, 0, 0, 0, 0, 0, 0,
+            3,3, 3,3, 3,3, 3,3,     0, 0, 0, 0, 0, 0, 0, 0,
+    };
+
+    static int calcScoreOfMove(int move){
         int score = 0;
 
         // Center control: fromSquare - toSquare is added to score
-        score += centerDist[decodeFromSquare(move)] - centerDist[decodeToSquare(move)];
+        if(centerDist[decodeFromSquare(move)] > centerDist[decodeToSquare(move)]) {
+            score += centerDist[decodeFromSquare(move)] - centerDist[decodeToSquare(move)];
+        } // 3
 
         // Oh boy we like castling
-        if(decodeIsCastle(move)) score += 50;
+        if(decodeIsCastle(move)) score += 10;
 
         // Oh boy we love promotions
-        if(decodeIsPromo(move)) score += 200;
+        if(decodeIsPromo(move)) score += 50; //53
 
         // Attempt at LVA - HVT
         if(decodeIsCapture(move)) {
@@ -61,11 +66,21 @@ public class IntegerEncoder {
             // Get value of enemy piece
             int enemyValue = pieceValue(decodeCapturedPieceType(move));
 
-            // Flat 100 for capture, extra based on enemy value and own value
-            score += 100 + (10 * enemyValue - ownValue);
-        } */
+            score += 30 + (10 * enemyValue - ownValue); // Pawn cap king = 179; MAX 179 + 53 = 232; King cap Pawn =
+        }
+        return score;
+    }
 
-        return 10;
+    static int pieceValue(int piece){
+        return switch (piece) {
+            case 1, 9 -> 1;
+            case 2, 10 -> 3;
+            case 3, 11 -> 3;
+            case 4, 12 -> 5;
+            case 5, 13 -> 9;
+            case 6, 14 -> 15;
+            default -> 0;
+        };
     }
 
     public static int decodeFromSquare(int encodedInt) {
