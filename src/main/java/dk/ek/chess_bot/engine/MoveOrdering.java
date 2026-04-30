@@ -20,6 +20,41 @@ public class MoveOrdering {
         return (score << 24)|move;
     }
 
+    /* Recieve list of moves
+    Place best move on top
+    Check that move
+    */
+    static int[][] orderMoves(int[][] moves){
+        // Check each depth
+        for(int i = 0; i < moves.length; i++){
+            // Check each move in that depth
+            int currentBestMove = 0;
+            int currentMax = 0;
+
+            //while (true){
+                // Starting pos, as we want to get the ordered list? I have caused myself confusion
+            // int startingPos = 0;
+            for(int j = 0; j < moves[i].length; j++){
+                int currentMove = moves[i][j];
+                int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
+                if (currentMoveScore > currentMax) {
+                 // If current move is new max, switch with old fake max
+                 moves[i][0] = currentMove;
+                 moves[i][j] = currentBestMove;
+                 currentBestMove = currentMove;
+                 // Also set new REAL max
+                 currentMax = currentMoveScore;
+
+                 // Update starting pos to find second-highest valued move
+                 // startingPos++;
+//             }
+//             // If it causes pruning
+//             if (1==1) break;
+            }
+         }
+     } return moves;
+    }
+
     static int calcScoreOfMove(int move){
         int score = 0;
 
@@ -56,4 +91,5 @@ public class MoveOrdering {
             default -> 0;
         };
     }
+
 }
