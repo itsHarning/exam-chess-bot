@@ -12,6 +12,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -39,7 +40,13 @@ public class Controller implements Initializable {
     private int from;
 	private int to;
 
+    Pane clickedPane;
+    int clickedPiece;
+    int fromIndex;
+
 	private GameState gameState;
+    private LinkedList<String> history = new LinkedList<>();
+    private int historyPointer = 0;
 
 	@FXML
 	public void setTurnWhite() {
@@ -52,6 +59,17 @@ public class Controller implements Initializable {
 		gameState.setWhiteToMove(!gameState.isWhiteToMove());
         whiteTurn.setSelected(!blackTurn.isSelected());
 	}
+
+    public void swapTurn(){
+        System.out.println("Swapping the turn!");
+        if (gameState.isWhiteToMove()){
+            whiteTurn.setSelected(true);
+            blackTurn.setSelected(false);
+        }else{
+            blackTurn.setSelected(true);
+            whiteTurn.setSelected(false);
+        }
+    }
 
 	@FXML
 	public void FENToBoard() {
@@ -68,7 +86,11 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.getNextMove(gameState);
+        gameState = Bot.getNextMove(gameState, 1000);
+        history.add(Translator.gameStateToFEN(gameState));
+        historyPointer++;
+        swapTurn();
+
         renderBoard();
     }
 
@@ -98,6 +120,7 @@ public class Controller implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		this.gameState = new GameState();
+        history.add(Translator.gameStateToFEN(gameState));
 		whiteTurn.setSelected(gameState.isWhiteToMove());
 		blackTurn.setSelected(!gameState.isWhiteToMove());
 
@@ -162,9 +185,6 @@ public class Controller implements Initializable {
             {new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane(), new Pane()},
     };
 
-    Pane clickedPane;
-    int clickedPiece;
-    int fromIndex;
 
     @FXML
     public void buildBoardRep(){
@@ -207,6 +227,13 @@ public class Controller implements Initializable {
 
                         board[convertTo0x88(finalI,finalJ)] = clickedPiece;
                         board[fromIndex] = 0;
+
+                        gameState.setCurrentBoard(board);
+                        history.add(Translator.gameStateToFEN(gameState));
+                        historyPointer++;
+                        gameState.setWhiteToMove(!gameState.isWhiteToMove());
+                        swapTurn();
+
                         clickedPane = null;
                         clickedPiece = 0;
                         renderBoard();
@@ -296,11 +323,18 @@ public class Controller implements Initializable {
         renderBoard();
 	}
 
-    public void resetStyling(){
-        for(Pane[] paneRow: panes){
-            for(Pane pane: paneRow){
-                pane = new Pane();
-            }
+    @FXML
+    public void revertGameState(){
+        System.out.println("Reverting game state");
+        if (historyPointer>0) {
+            historyPointer--;
+            gameState = Translator.gameStateFromFEN(history.get(historyPointer));
+            history.removeLast();
+            buildBoardRep();
+            renderBoard();
+        }
+        else {
+            System.out.println("You have reached the beginning of the history.");
         }
     }
 
@@ -388,11 +422,6 @@ public class Controller implements Initializable {
                 return "bKing";
         }
         return "";
-    }
-
-    int convert0x88toGridIndex(int i){
-        //0 = 11 : 16 = 21
-        return convertFrom0x88(i)[0] + (89-(convertFrom0x88(i)[1]*10));
     }
 
     int[] convertFrom0x88(int i) {
