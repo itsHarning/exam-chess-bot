@@ -237,7 +237,7 @@ public class Piece {
                 }
             }
         }
-
+        //HEY Harning
 
         return counter;
     }
