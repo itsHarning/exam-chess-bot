@@ -1,15 +1,9 @@
 package dk.ek.chess_bot.engine;
 
-import dk.ek.chess_bot.engine.pieces.Pawn;
-import dk.ek.chess_bot.engine.pieces.Piece;
-import javafx.concurrent.Task;
-
-import java.sql.Time;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
 import static dk.ek.chess_bot.engine.Pieces.*;
@@ -66,7 +60,7 @@ public class Bot {
             int[][] possibleMoves = new int[64][256];
             int counter = 0;
             for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
             }
 
             int alpha = -100000;
@@ -291,7 +285,7 @@ public class Bot {
 
         if(isMax){
             for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
@@ -313,7 +307,7 @@ public class Bot {
         }
         else{
             for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
