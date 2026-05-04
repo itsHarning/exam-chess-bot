@@ -86,7 +86,7 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.getNextMove(gameState, 1000);
+        gameState = Bot.getNextMove(gameState, 50);
         history.add(Translator.gameStateToFEN(gameState));
         historyPointer++;
         swapTurn();
@@ -209,7 +209,7 @@ public class Controller implements Initializable {
                             fromIndex = convertTo0x88(finalI, finalJ);
                             clickedPane = pane;
                             int[] moves = new int[64];
-                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
+                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, gameState.getEnPassantIndex(), 0);
 
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
@@ -267,7 +267,7 @@ public class Controller implements Initializable {
 					if (event.getButton() == MouseButton.PRIMARY) {
 						if (paneToMove == null) {
                             int[] moves = new int[64];
-                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
+                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, gameState.getEnPassantIndex(),0);
 
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
