@@ -1,6 +1,5 @@
 package dk.ek.chess_bot.engine;
 
-import dk.ek.chess_bot.engine.pieces.Piece;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
@@ -13,8 +12,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import java.net.URL;
@@ -209,7 +206,7 @@ public class Controller implements Initializable {
                             fromIndex = convertTo0x88(finalI, finalJ);
                             clickedPane = pane;
                             int[] moves = new int[64];
-                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
+                            int counter = MoveController.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
 
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
@@ -267,7 +264,7 @@ public class Controller implements Initializable {
 					if (event.getButton() == MouseButton.PRIMARY) {
 						if (paneToMove == null) {
                             int[] moves = new int[64];
-                            int counter = Piece.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
+                            int counter = MoveController.getMoves(this.gameState.isWhiteToMove(), square, board, moves, 0);
 
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));

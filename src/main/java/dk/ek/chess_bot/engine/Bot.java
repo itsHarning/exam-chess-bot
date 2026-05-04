@@ -1,10 +1,5 @@
 package dk.ek.chess_bot.engine;
 
-import dk.ek.chess_bot.engine.pieces.Pawn;
-import dk.ek.chess_bot.engine.pieces.Piece;
-import javafx.concurrent.Task;
-
-import java.sql.Time;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -77,7 +72,7 @@ public class Bot {
 
             int counter = 0;
             for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
             }
 
             // Set initial alphaBeta values
@@ -318,7 +313,7 @@ public class Bot {
         if(isMax){
             //Find all new moves on this depth
             for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
 
             // Check PV first
@@ -374,7 +369,7 @@ public class Bot {
         }
         else{
             for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
 
             // Check PV

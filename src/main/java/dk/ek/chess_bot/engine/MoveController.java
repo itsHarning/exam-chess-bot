@@ -1,4 +1,4 @@
-package dk.ek.chess_bot.engine.pieces;
+package dk.ek.chess_bot.engine;
 
 import dk.ek.chess_bot.engine.Board;
 import dk.ek.chess_bot.engine.IntegerEncoder;
@@ -6,7 +6,7 @@ import dk.ek.chess_bot.engine.ThreatDetector;
 
 import static dk.ek.chess_bot.engine.Pieces.*;
 
-public class Piece {
+public class MoveController {
 
     private static final int[] ROOK_DIRECTIONS = {16, 1, -16, -1};
     private static final int[] BISHOP_DIRECTIONS = {15, 17, -15, -17};
