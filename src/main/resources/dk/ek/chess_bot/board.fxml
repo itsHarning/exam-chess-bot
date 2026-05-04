@@ -57,6 +57,6 @@
             <TextField />
          </children>
       </HBox>
-      <Button mnemonicParsing="false" text="Undo Move" />
+      <Button mnemonicParsing="false" onAction="#revertGameState" text="Undo Move" />
     </VBox>
 </HBox>
