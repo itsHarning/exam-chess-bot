@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
 import static dk.ek.chess_bot.engine.Pieces.*;
@@ -19,12 +21,17 @@ public class Bot {
     private static int enPassantIndex;
     private static int totalMoves;
     private static int halfMoveClock;
+    private static boolean botIsWhite;
 
     private static int bestMoveSoFar;
 
     private static int nodesSearched = 0;
 
     private static Instant endTime;
+    static boolean ordering=false;
+
+    static int[] pv = new int[64];
+    static int[] currentPath = new int[64];
 
     static GameState getNextMove(GameState gameState, int givenDuration) {
         Instant start = Instant.now();
@@ -42,10 +49,13 @@ public class Bot {
         totalMoves = gameState.getTotalMoves();
         halfMoveClock = gameState.getHalfMoveClock();
 
-        int max_depth = 25; // Max depth, if program somehow reaches that before timer runs out
-        GameState newGameState = new GameState();
+        botIsWhite = gameState.isWhiteToMove();
 
+        int max_depth = 8; // Max depth, if program somehow reaches that before timer runs out
+        GameState newGameState = new GameState();
+        int bestMoveFoundInPrevious = 0;
         int bestMoveFound = 0;
+
         for (int depth = 1; depth <= max_depth; depth++) {
             System.out.println("Starting depth: " + depth);
             if (!Instant.now().isBefore(endTime)) {
@@ -53,23 +63,38 @@ public class Bot {
                 break;
             }
 
-            //We reset the best move, to purge old info
-            bestMoveSoFar = 0;
+            //We reset the best move, to purge old info. I, Peter, removed it fully
+            // bestMoveSoFar = 0;
             nodesSearched = 0; //Amount of nodes searched too
 
+            // Get possible moves, pack into possibleMoves[0], meaning first array of arrays
             int[][] possibleMoves = new int[64][256];
+
             int counter = 0;
             for (int i = 0; i < 128; i++) {
                 counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0], counter);
             }
 
+            // Set initial alphaBeta values
             int alpha = -100000;
             int beta = 100_000;
 
             int nullReturn = -99_999;
 
+            //Check PV first
+            for (int i = 0; i < counter; i++) {
+                if (possibleMoves[0][i] == pv[0]) {
+                    int temp = possibleMoves[0][0];
+                    possibleMoves[0][0] = possibleMoves[0][i];
+                    possibleMoves[0][i] = temp;
+                    break;
+                }
+            }
+
+            // For every move, make the move, get score, unmake the move
             for (int i = 0; i < counter; i++) {
                 makeMove(possibleMoves[0][i]);
+                //
                 int score = alphaBeta(possibleMoves, 0, depth, false, alpha, beta);
                 unMakeMove(possibleMoves[0][i]);
                 if (score == nullReturn) break; // ASK if better way to do
@@ -77,6 +102,8 @@ public class Bot {
                 if (score > alpha) {
                     alpha = score;
                     bestMoveFound = possibleMoves[0][i];
+                    currentPath[0] = possibleMoves[0][i];
+                    System.arraycopy(currentPath, 0, pv, 0, depth);
                 }
             }
 
@@ -84,16 +111,24 @@ public class Bot {
                 System.out.println("Out of time!");
                 break;
             }
-            System.out.println("Finished depth: " + depth);
+            bestMoveFoundInPrevious = bestMoveFound;
+
+            System.out.println("Finished depth: " + depth + ", it took " + ChronoUnit.MILLIS.between(start, Instant.now()) + "ms");
+            System.out.print("PV: ");
+            for (int i = 0; i < depth; i++) {
+                if (pv[i] == 0) break;
+                System.out.print(convertIndexToCoordinates(IntegerEncoder.decodeFromSquare(pv[i]))
+                        + "->" + convertIndexToCoordinates(IntegerEncoder.decodeToSquare(pv[i])) + " ");
+            }
         }
 
-        System.out.println("score before: " + Board.getScore(currentBoard, isWhiteToMove));
-        makeMove(bestMoveFound);
+        System.out.println("score before: " + Board.getScore(currentBoard, botIsWhite));
+        makeMove(bestMoveFoundInPrevious);
 
         DecimalFormat numberFormatter = new DecimalFormat("#,###");
         String formattedNodesSearched = numberFormatter.format(nodesSearched).replace(",", ".");
 
-        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !isWhiteToMove) + " having searched: " + formattedNodesSearched + " nodes");
+        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !botIsWhite) + " having searched: " + formattedNodesSearched + " nodes");
         Board.printBoard(currentBoard);
 
         newGameState.setWhiteToMove(isWhiteToMove);
@@ -152,7 +187,8 @@ public class Bot {
         isWhiteToMove = !isWhiteToMove;
     }
 
-    static void unMakeMove(int move){ //Unmaking a move is also quite complicated
+    static void unMakeMove(int move){
+        //Unmaking a move is also quite complicated
         //1: We change back to be able to know who "We" are.
         isWhiteToMove = !isWhiteToMove;
 
@@ -249,27 +285,18 @@ public class Bot {
     static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
         if (Instant.now().isAfter(endTime)) return -99_999; // ASK if better way to do
 
-        System.out.println(isWhiteToMove);
         // ASK check if checkmate
         // TODO temp simple solution
         boolean whiteKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 6);
         boolean blackKingContains = IntStream.of(currentBoard).anyMatch(piece -> piece == 14);
 
-        if(isWhiteToMove && !whiteKingContains) {
-            System.out.println("I imagined white lost");
-            return -1000000 + depth;
+        if(!blackKingContains){ //White has won
+            if (botIsWhite) return 100000-depth; //If the bot is white (The maximizer) Return a HIGH value
+            else return -100000 + depth; //If the bot is playing as black, and white is the minimizer, return a LOW value
         }
-        if(!isWhiteToMove && !whiteKingContains) {
-            System.out.println("I imagined white won");
-            return 1000000 - depth;
-        }
-        if(isWhiteToMove && !blackKingContains) {
-            System.out.println("I imagined black lost");
-            return 1000000 - depth;
-        }
-        if(!isWhiteToMove && !blackKingContains) {
-            System.out.println("I imagined black won");
-            return -1000000 + depth;
+        if(!whiteKingContains){ //Black has won
+            if (botIsWhite) return -100000 + depth; //If the bot is white (The maximizer) Return a LOW value
+            else return 100000 - depth; //If the bot is playing as black, and white is the minimizer, return a HIGH value
         }
 
         depth = depth+1; //We start by incrementing the depth
@@ -277,19 +304,35 @@ public class Bot {
         nodesSearched++;
 
         if(depth == targetDepth){
-            return Board.getScore(currentBoard, isWhiteToMove);
+            return Board.getScore(currentBoard, botIsWhite);
         }
 
 
         int counter = 0;
 
         if(isMax){
+            //Find all new moves on this depth
             for (int i = 0; i < 128; i++) {
                 counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
+
+            // Check PV first
+            for (int i = 0; i < counter; i++) {
+                if (moveList[depth][i] == pv[depth]) {
+                    int temp = moveList[depth][0];
+                    moveList[depth][0] = moveList[depth][i];
+                    moveList[depth][i] = temp;
+                    break;
+                }
+            }
+
+            //For each move on this depth, find best move and check it
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
+                int currentBestMove = moveList[depth][i];
+                int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
 
+                //Make move, recursive alphaBeta lives here
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
@@ -297,9 +340,28 @@ public class Bot {
                     unMakeMove(move);
                     if (score == -99_999) break; // ASK if better way to do
 
-                    alpha = Math.max(alpha, score);
+                    if (score > alpha) {
+                        alpha = score;
+                        currentPath[depth] = move;
+                        System.arraycopy(currentPath, 0, pv, 0, targetDepth);
+                    }
                     if (beta <= alpha) {
                         return alpha;
+                    }
+
+                    if (ordering){
+                        for(int j = i+1; j < counter; j++){
+                            int currentMove = moveList[depth][j];
+                            int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
+                            if (currentMoveScore > currentMax) {
+                            // If current move is new max, switch with old fake max
+                            moveList[depth][i] = currentMove;
+                            moveList[depth][j] = currentBestMove;
+                            currentBestMove = currentMove;
+                            // Also set new REAL max
+                            currentMax = currentMoveScore;
+                            }
+                        }
                     }
                 }
             }
@@ -309,19 +371,51 @@ public class Bot {
             for (int i = 0; i < 128; i++) {
                 counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
+
+            // Check PV
+            for (int i = 0; i < counter; i++) {
+                if (moveList[depth][i] == pv[depth]) {
+                    int temp = moveList[depth][0];
+                    moveList[depth][0] = moveList[depth][i];
+                    moveList[depth][i] = temp;
+                    break;
+                }
+            }
+
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
+                int currentBestMove = moveList[depth][i];
+                int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
 
+                //Make move, recursive alphaBeta lives here
                 int move = moveList[depth][i];
                 if (move != 0) {
                     makeMove(move);
                     int score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     unMakeMove(move);
-                    if (score == -999999) break; // ASK if better way to do
+                    if (score == -99_999) break; // ASK if better way to do
 
-                    beta = Math.min(beta, score);
-                    if (beta <= alpha) {
-                        return beta;
+                    if (score < beta) {
+                        beta = score;
+                        currentPath[depth] = move;
+                        System.arraycopy(currentPath, 0, pv, 0, targetDepth);
+                    }
+                    if (beta <= alpha) return beta;
+                }
+
+                //Sort
+                if (ordering){
+                    for(int j = i+1; j < counter; j++){
+                        int currentMove = moveList[depth][j];
+                        int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
+                        if (currentMoveScore > currentMax) {
+                            // If current move is new max, switch with old fake max
+                            moveList[depth][i] = currentMove;
+                            moveList[depth][j] = currentBestMove;
+                            currentBestMove = currentMove;
+                            // Also set new REAL max
+                            currentMax = currentMoveScore;
+                        }
                     }
                 }
             }
@@ -348,7 +442,7 @@ public class Bot {
         gameState.setCurrentBoard(board);
 
 
-        getNextMove(gameState, 2);
+        getNextMove(gameState, 1000);
 
 
     }

@@ -106,6 +106,8 @@ public class Board {
     public static int getScore(int[] board, boolean isWhite){
         int score = 0;
         int phaseScore = 0; //Here we add the value of non pawn/king pieces to interpolate between early/mid/late game.
+        boolean whiteKing = false;
+        boolean blackKing = false;
         for (int i = 0; i < 128; i++) {
             switch(board[i]){
                 case 1:
@@ -157,6 +159,7 @@ public class Board {
                     //We don't need a queen square table. She is so strong she is good everywhere! and her high base value makes boosting for position less relevant.
                     break;
                 case 6:
+                    whiteKing = true;
                     score += 20000; //REMEMBER HIGH VALUE FOR THE KING!
                     if(phaseScore > 24) phaseScore = 24;
                     score += (int) lerp(
@@ -165,6 +168,7 @@ public class Board {
                             phaseValues[phaseScore]);
                     break;
                 case 14:
+                    blackKing = true;
                     score -= 20000;
                     if(phaseScore > 24) phaseScore = 24;
                     score -= (int) lerp(
@@ -174,6 +178,18 @@ public class Board {
                     break;
 
             }
+        }
+        if (isWhite && !whiteKing){ //Plays as white, White loses
+            return -1000000;
+        }
+        if (isWhite && !blackKing){ //Plays as white, White wins
+            return 1000000;
+        }
+        if (!isWhite && !whiteKing){ //Plays as black, white loses
+            return 1000000;
+        }
+        if (!isWhite && !blackKing){ //Plays as black, white wins
+            return -1000000;
         }
 
         if (isWhite){return score;} //If we are white we want the score as is calculated
@@ -200,7 +216,7 @@ public class Board {
                 WROOK, WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK,    EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
                 WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN, WPAWN,             EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
                 EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,             EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                EMPTY, EMPTY, EMPTY, WQUEEN, EMPTY, EMPTY, EMPTY, EMPTY,             EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+                EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,             EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
                 EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,             EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
                 EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,             EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
                 BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN, BPAWN,             EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
