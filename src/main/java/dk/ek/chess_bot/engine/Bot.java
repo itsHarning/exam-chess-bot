@@ -308,13 +308,17 @@ public class Bot {
             return Board.getScore(currentBoard, botIsWhite);
         }
 
-        int counter = 0;
+        int counter;
 
-        if(isMax){
-            //Find all new moves on this depth
-            for (int i = 0; i < 128; i++) {
-                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
-            }
+        // For each move on this depth, find best move and check it
+        System.out.println("is max: " + isMax);
+        if (isMax) {
+
+            // Find all new moves on this depth
+            // Makes all possible moves and puts them in moveList
+            // possible moves are counted and put in counter, as using moveList.length would always return the same number
+            counter = getMoveList(moveList[depth]);
+
 
             // Check PV first
             for (int i = 0; i < counter; i++) {
@@ -326,13 +330,7 @@ public class Bot {
                 }
             }
 
-            //For each move on this depth, find best move and check it
-        System.out.println("is max: " + isMax);
-        if (isMax) {
             Board.printBoard(currentBoard);
-            // Makes all possible moves and puts them in moveList
-            // possible moves are counted and put in counter, as using moveList.length would always return the same number
-            counter = getMoveList(moveList[depth]);
 
             boolean isLegalMove = false;
 
@@ -353,6 +351,7 @@ public class Bot {
                         isLegalMove = true;
                         score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
                     } else System.out.println("not legal");
+
                     unMakeMove(move);
 
                     if (score == -99_999) break;
@@ -393,14 +392,6 @@ public class Bot {
             // possible moves are counted and put in counter, as using moveList.length would always return the same number
             counter = getMoveList(moveList[depth]);
 
-            boolean isLegalMove = false;
-
-            // Simulates moves
-        } else {
-            for (int i = 0; i < 128; i++) {
-                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
-            }
-
             // Check PV
             for (int i = 0; i < counter; i++) {
                 if (moveList[depth][i] == pv[depth]) {
@@ -411,6 +402,9 @@ public class Bot {
                 }
             }
 
+            boolean isLegalMove = false;
+
+            // Simulates moves
             for (int i = 0; i < counter; i++) {
                 //TODO: implement simple selection sort
                 int currentBestMove = moveList[depth][i];
@@ -437,12 +431,15 @@ public class Bot {
                         currentPath[depth] = move;
                         System.arraycopy(currentPath, 0, pv, 0, targetDepth);
                     }
-                    if (beta <= alpha) return beta;
+                    if (beta <= alpha) {
+                        System.out.println("beta cutoff");
+                        return beta;
+                    }
                 }
 
                 //Sort
-                if (ordering){
-                    for(int j = i+1; j < counter; j++){
+                if (ordering) {
+                    for(int j = i+1; j < counter; j++) {
                         int currentMove = moveList[depth][j];
                         int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
                         if (currentMoveScore > currentMax) {
@@ -453,10 +450,6 @@ public class Bot {
                             // Also set new REAL max
                             currentMax = currentMoveScore;
                         }
-                    beta = Math.min(beta, score);
-                    if (beta <= alpha) {
-                        System.out.println("beta cutoff");
-                        return beta;
                     }
                 }
             }
@@ -470,7 +463,7 @@ public class Bot {
     private static int getMoveList(int[] moveList) {
         int counter = 0;
         for (int i = 0; i < 128; i++) {
-            counter = Piece.getMoves(isWhiteToMove, i, currentBoard, moveList, counter);
+            counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList, counter);
         }
         return counter;
     }
