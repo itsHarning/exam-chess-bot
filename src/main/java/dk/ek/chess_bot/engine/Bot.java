@@ -388,8 +388,7 @@ public class Bot {
 
             System.out.println("alpha, no cut");
             return alpha;
-        }
-        else {
+        } else {
             // Makes all possible moves and puts them in moveList
             // possible moves are counted and put in counter, as using moveList.length would always return the same number
             counter = getMoveList(moveList[depth]);
@@ -397,7 +396,7 @@ public class Bot {
             boolean isLegalMove = false;
 
             // Simulates moves
-        else{
+        } else {
             for (int i = 0; i < 128; i++) {
                 counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], counter);
             }
