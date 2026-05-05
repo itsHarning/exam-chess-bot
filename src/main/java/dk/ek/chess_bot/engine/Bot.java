@@ -80,7 +80,7 @@ public class Bot {
 
             //Step 4: Find the possible moves from the initial position. ALPHA BETA ROOT
             for (int i = 0; i < 128; i++) {
-                counter = Piece.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0],enPassantHistory[historyIndex], counter);
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0],enPassantHistory[historyIndex], counter);
             } //Counter increases with each move we find
 
             // Set initial alphaBeta values
