@@ -14,16 +14,12 @@ public class Bot {
     private static int[] currentBoard;
 
     private static boolean isWhiteToMove;
-    private static int totalMoves;
-    private static int halfMoveClock;
     private static boolean botIsWhite;
 
     private static int historyIndex; //To track things such as en passant indexes through time and castling rights through time, we need to maintain a history
     private static int[] enPassantHistory = new int[32];//32 would be the maximum depth
     private static boolean[][] castlingHistory = new boolean[32][4];//32 is the depth, and the four are the booleans we are tracking at each depth
     //WK, WQ, BK, BQ
-
-    private static int bestMoveSoFar;
 
     private static int nodesSearched = 0;
 
@@ -34,7 +30,6 @@ public class Bot {
 
     static boolean timeOut(){
         if (System.nanoTime()-startTime>timeLimit){
-            System.out.println("Out of time!");
             return true;
         }
         return false;
@@ -48,14 +43,6 @@ public class Bot {
         startTime = System.nanoTime();
         timeLimit = givenDuration * 1_000_000L;
 
-        /*
-        Instant start = Instant.now();
-        // Target duration
-        Duration duration = Duration.ofMillis(givenDuration);
-        endTime = start.plus(duration);
-
-         */
-
         currentBoard = gameState.getCurrentBoard();
         isWhiteToMove = gameState.isWhiteToMove();
 
@@ -64,10 +51,7 @@ public class Bot {
         castlingHistory[0][0] = gameState.isWhiteCastleKingSide(); //We set the history at index 0 to be the state from the gamestate
         castlingHistory[0][1] = gameState.isWhiteCastleQueenSide();
         castlingHistory[0][2] = gameState.isBlackCastleKingSide();
-        castlingHistory[0][3] = gameState.isBlackCastleKingSide();
-
-        totalMoves = gameState.getTotalMoves();
-        halfMoveClock = gameState.getHalfMoveClock();
+        castlingHistory[0][3] = gameState.isBlackCastleQueenSide();
 
         botIsWhite = gameState.isWhiteToMove();
 
@@ -84,7 +68,6 @@ public class Bot {
 
             //Step 2: Purge info from previous searches
             historyIndex = 0;
-            bestMoveSoFar = 0;
             nodesSearched = 0;
 
             // Get possible moves, pack into possibleMoves[0], meaning first array of arrays
@@ -123,6 +106,7 @@ public class Bot {
                 int bestIndex = i;
                 for (int j = i+1; j < counter; j++) {
                     if (possibleMoves[0][j] == prevPath[0]){
+                        System.out.println("I found the PV in root");
                         bestIndex = j;
                         break;
                     }
@@ -137,25 +121,15 @@ public class Bot {
                 possibleMoves[0][bestIndex] = temp;
 
                 makeMove(possibleMoves[0][i]);
-                int score = alphaBeta(possibleMoves, 0, depth, isWhiteToMove, alpha, beta);
+                int score = alphaBeta(possibleMoves, 0, depth, false, alpha, beta);
                 unMakeMove(possibleMoves[0][i]);
                 if (score == nullReturn) break; //If we run out of time in AlphaBeta, break the loop
 
-                if(isWhiteToMove){
-                    if (score > alpha) {
-                        alpha = score;
-                        bestMoveFound = possibleMoves[0][i];
-                        currentPath[0] = possibleMoves[0][i];
-                        System.arraycopy(currentPath, 0, pv, 0, depth);
-                    }
-                }
-                else{
-                    if (score < beta) {
-                        beta = score;
-                        bestMoveFound = possibleMoves[0][i];
-                        currentPath[0] = possibleMoves[0][i];
-                        System.arraycopy(currentPath, 0, pv, 0, depth);
-                    }
+                if (score > alpha) {
+                    alpha = score;
+                    bestMoveFound = possibleMoves[0][i];
+                    currentPath[0] = possibleMoves[0][i];
+                    System.arraycopy(currentPath, 0, pv, 0, depth);
                 }
             }
 
@@ -397,8 +371,6 @@ public class Bot {
     static int alphaBeta(int[][] moveList, int depth, int targetDepth, boolean isMax, int alpha, int beta){
         if (timeOut()) return -99_999; // ASK if better way to do
 
-        // ASK check if checkmate
-        // TODO temp simple solution
         boolean whiteKingContains = false;
         boolean blackKingContains = false;
         for (int i = 0; i < 128; i++) {
@@ -411,10 +383,12 @@ public class Bot {
         }
 
         if(!blackKingContains){ //White has won
-            return 100000;
+            if (botIsWhite) return 100000-depth;
+            else return -100000+depth;
         }
         if(!whiteKingContains){ //Black has won
-            return -100000;
+            if(botIsWhite) return -100000+depth;
+            else return 100000-depth;
         }
 
         depth++; //We start by incrementing the depth
@@ -432,23 +406,13 @@ public class Bot {
         }
 
         if(isMax){
-            // Check PV first
-            /*
-            for (int i = 0; i < counter; i++) {
-                if (moveList[depth][i] == pv[depth]) {
-                    int temp = moveList[depth][0];
-                    moveList[depth][0] = moveList[depth][i];
-                    moveList[depth][i] = temp;
-                    break;
-                }
-            }
-             */
             //For each move on this depth, find best move and check it
             for (int i = 0; i < counter; i++) {
                 //Either lazy sort or set PV move first
                 int bestIndex = i;
                 for (int j = i+1; j < counter; j++) {
                     if (moveList[depth][j] == prevPath[depth]){
+                        System.out.println("I found the PV");
                         bestIndex = j;
                         break;
                     }
@@ -503,6 +467,7 @@ public class Bot {
                 int bestIndex = i;
                 for (int j = i+1; j < counter; j++) {
                     if (moveList[depth][j] == prevPath[depth]){
+                        System.out.println("I found the PV");
                         bestIndex = j;
                         break;
                     }

@@ -180,12 +180,8 @@ public class Board {
             }
         }
 
-        return score;
-        /*
         if (isWhite){return score;} //If we are white we want the score as is calculated
         else{return -score;} //If we are black we want the inverse
-
-         */
     }
 
     static final int[] phaseValues = new int[] {0, 4, 8, 12, 17, 21, 25, 29, 33, 37, 42, 46, 50, 54, 58, 62, 67, 71, 75, 79, 83, 88, 92, 96, 100};
