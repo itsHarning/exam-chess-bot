@@ -1,6 +1,5 @@
 package dk.ek.chess_bot.engine;
 
-import static dk.ek.chess_bot.engine.GameStateManager.board;
 import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class ThreatDetector {
