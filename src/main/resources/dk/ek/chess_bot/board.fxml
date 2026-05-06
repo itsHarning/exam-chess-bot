@@ -54,9 +54,9 @@
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Button mnemonicParsing="false" onAction="#makeMove" text="MakeMove" />
-            <TextField />
+            <TextField fx:id="enPassantField" />
          </children>
       </HBox>
-      <Button mnemonicParsing="false" text="Undo Move" />
+      <Button mnemonicParsing="false" onAction="#revertGameState" text="Undo Move" />
     </VBox>
 </HBox>

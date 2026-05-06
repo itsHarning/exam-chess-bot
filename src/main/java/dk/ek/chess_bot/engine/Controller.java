@@ -31,6 +31,9 @@ public class Controller implements Initializable {
 	@FXML
 	private TextField fenField;
 
+    @FXML
+    private TextField enPassantField;
+
 	private Pane paneToMove;
 	private String paneColour = "";
 	private String pieceToMove = "";
@@ -83,7 +86,15 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.getNextMove(gameState, 3000000);
+        int enPassantInput = -1;
+        try{
+            enPassantInput = Integer.parseInt(enPassantField.getText());
+            System.out.println("En passant index set as: " + enPassantInput);
+        }catch (Exception e){
+            System.out.println("No input in field");
+        }
+        gameState.setEnPassantIndex(enPassantInput);
+        gameState = Bot.getNextMove(gameState, 10000);
         history.add(Translator.gameStateToFEN(gameState));
         historyPointer++;
         swapTurn();
@@ -329,6 +340,14 @@ public class Controller implements Initializable {
             history.removeLast();
             buildBoardRep();
             renderBoard();
+            if (gameState.isWhiteToMove()){
+                whiteTurn.setSelected(true);
+                blackTurn.setSelected(false);
+            }
+            else{
+                whiteTurn.setSelected(false);
+                blackTurn.setSelected(true);
+            }
         }
         else {
             System.out.println("You have reached the beginning of the history.");
@@ -338,6 +357,11 @@ public class Controller implements Initializable {
     @FXML
     public void renderBoard(){
         System.out.println("Rendering board");
+        int[] enPassantCoordinates = new int[] {-1,-1};
+        if(gameState.getEnPassantIndex() != -1){
+            enPassantCoordinates = convertFrom0x88(gameState.getEnPassantIndex());
+            System.out.println(enPassantCoordinates[0] + ", " + enPassantCoordinates[1]);
+        }
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 // changes i/j to fit board coordinates
@@ -386,6 +410,9 @@ public class Controller implements Initializable {
                         }
                     }
                     pane.setId("0");
+                }
+                if (enPassantCoordinates[0] == j && 7-enPassantCoordinates[1] == i){
+                    pane.getStyleClass().add("enPassant");
                 }
             }
         }

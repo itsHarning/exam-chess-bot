@@ -90,7 +90,7 @@ public class Board {
             -20, -30, -30, -40, -40, -30, -30, -20,     0,0,0,0,0,0,0,0,
             -10, -20, -20, -20, -20, -20, -20, -10,     0,0,0,0,0,0,0,0,
              20,  20,   0,   0,   0,   0,  20,  20,     0,0,0,0,0,0,0,0,
-             20,  30,  10,   0,   0,  10,  30,  20,     0,0,0,0,0,0,0,0
+             20,  30,  2000,   0,   0,  10,  2000,  20,     0,0,0,0,0,0,0,0
     };
     final static int[] kingLateScores = new int[]{ //In the late game, the king becomes a valuable attacking piece! Let's use it!
             -50,-40,-30,-20,-20,-30,-40,-50,        0,0,0,0,0,0,0,0,
@@ -100,7 +100,7 @@ public class Board {
             -30,-10, 30, 40, 40, 30,-10,-30,        0,0,0,0,0,0,0,0,
             -30,-10, 20, 30, 30, 20,-10,-30,        0,0,0,0,0,0,0,0,
             -30,-30,  0,  0,  0,  0,-30,-30,        0,0,0,0,0,0,0,0,
-            -50,-30,-30,-30,-30,-30,-30,-50,         0,0,0,0,0,0,0,0
+            -50,-30,2000,-30,-30,-30,2000,-50,         0,0,0,0,0,0,0,0
     };
 
     public static int getScore(int[] board, boolean isWhite){
@@ -162,10 +162,7 @@ public class Board {
                     whiteKing = true;
                     score += 20000; //REMEMBER HIGH VALUE FOR THE KING!
                     if(phaseScore > 24) phaseScore = 24;
-                    score += (int) lerp(
-                            getPieceScore(kingEarlyScores, i, true),
-                            getPieceScore(kingLateScores, i, true),
-                            phaseValues[phaseScore]);
+                    score += (int) getPieceScore(kingEarlyScores, i, true);
                     break;
                 case 14:
                     blackKing = true;
@@ -178,18 +175,6 @@ public class Board {
                     break;
 
             }
-        }
-        if (isWhite && !whiteKing){ //Plays as white, White loses
-            return -1000000;
-        }
-        if (isWhite && !blackKing){ //Plays as white, White wins
-            return 1000000;
-        }
-        if (!isWhite && !whiteKing){ //Plays as black, white loses
-            return 1000000;
-        }
-        if (!isWhite && !blackKing){ //Plays as black, white wins
-            return -1000000;
         }
 
         if (isWhite){return score;} //If we are white we want the score as is calculated
@@ -207,8 +192,12 @@ public class Board {
     }
 
     static int getPieceScore(int[] pieceSquareTable, int pos, boolean isWhite){
-        if(isWhite){pos = pos^0b01110111;} //We flip the rank and file of the position, "flipping it" (Simply counting from the back won't work)
+        if(isWhite){pos = mirror(pos);} //We flip the rank and file of the position, "flipping it" (Simply counting from the back won't work)
         return pieceSquareTable[pos];
+    }
+
+    static int mirror(int pos) {
+        return ((7 - (pos >> 4)) << 4) | (pos & 7);
     }
 
     static int[] getFreshBoard(){
@@ -408,5 +397,13 @@ public class Board {
         System.out.println("###############################");
     }
 
+    public static void main(String[] args) {
+        int[] board = Board.getFreshBoard();
+
+        board[4] = 0;
+        board[6] = 6;
+
+        System.out.println(getScore(board, true));
+    }
 
 }

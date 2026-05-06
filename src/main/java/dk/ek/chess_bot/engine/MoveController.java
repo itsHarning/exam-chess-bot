@@ -49,14 +49,14 @@ public class MoveController {
         }
         // Check if attack is possible
         int attackIndex1 = pos+forward+1;
-        if(!isOffBoard(attackIndex1) && (isEnemy(isWhite, board[pos+forward+1])) || attackIndex1 == enPassantIndex) {
+        if(!isOffBoard(attackIndex1) && (isEnemy(isWhite, board[pos+forward+1])) || (attackIndex1 == enPassantIndex && enPassantIndex != -1)) {
             buffer[counter++] = IntegerEncoder.encodeMove(
                     pos, pos+forward+1, piece, true, board[pos+forward+1], false, false
             );
         }
         // Check both possible attacks
         int attackIndex2 = pos+forward-1;
-        if(!isOffBoard(attackIndex2) && (isEnemy(isWhite, board[pos+forward-1])) || attackIndex2 == enPassantIndex) {
+        if(!isOffBoard(attackIndex2) && (isEnemy(isWhite, board[pos+forward-1])) || (attackIndex2 == enPassantIndex && enPassantIndex != -1)) {
             buffer[counter++] = IntegerEncoder.encodeMove(
                     pos, pos+forward-1, piece, true, board[pos+forward-1], false, false
             );
@@ -189,7 +189,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 4, false)
                             && !ThreatDetector.isSquareThreatened(board, 5, false)
                             && !ThreatDetector.isSquareThreatened(board, 6, false)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 4, 6, WKING, false, 0, false, true
                         );
@@ -204,7 +203,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 4, false)
                             && !ThreatDetector.isSquareThreatened(board, 2, false)
                             && !ThreatDetector.isSquareThreatened(board, 3, false)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 4, 2, WKING, false, 0, false, true
                         );
@@ -219,7 +217,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 116, true)
                             && !ThreatDetector.isSquareThreatened(board, 117, true)
                             && !ThreatDetector.isSquareThreatened(board, 118, true)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 116, 118, BKING, false, 0, false, true
                         );
@@ -234,7 +231,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 116, true)
                             && !ThreatDetector.isSquareThreatened(board, 115, true)
                             && !ThreatDetector.isSquareThreatened(board, 114, true)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 116, 114, BKING, false, 0, false, true
                         );

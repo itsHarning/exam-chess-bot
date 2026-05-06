@@ -47,14 +47,14 @@ public class Bot {
         castlingHistory[0][0] = gameState.isWhiteCastleKingSide(); //We set the history at index 0 to be the state from the gamestate
         castlingHistory[0][1] = gameState.isWhiteCastleQueenSide();
         castlingHistory[0][2] = gameState.isBlackCastleKingSide();
-        castlingHistory[0][3] = gameState.isBlackCastleKingSide();
+        castlingHistory[0][3] = gameState.isBlackCastleQueenSide();
 
         totalMoves = gameState.getTotalMoves();
         halfMoveClock = gameState.getHalfMoveClock();
 
         botIsWhite = gameState.isWhiteToMove();
 
-        int max_depth = 8; // Max depth, if program somehow reaches that before timer runs out
+        int max_depth = 20; // Max depth, if program somehow reaches that before timer runs out
         GameState newGameState = new GameState();
         int bestMoveFoundInPrevious = 0;
         int bestMoveFound = 0;
@@ -78,9 +78,11 @@ public class Bot {
             int counter = 0; //Keep track of how many moves we find
 
             //Step 4: Find the possible moves from the initial position. ALPHA BETA ROOT
+            counter = MoveController.getCastling(isWhiteToMove, currentBoard, possibleMoves[0],castlingHistory[0][0],castlingHistory[0][1],castlingHistory[0][2],castlingHistory[0][3],counter);
             for (int i = 0; i < 128; i++) {
                 counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0],enPassantHistory[historyIndex], counter);
             }
+
 
             int alpha = -100_000;
             int beta = 100_000;
@@ -136,7 +138,7 @@ public class Bot {
         DecimalFormat numberFormatter = new DecimalFormat("#,###");
         String formattedNodesSearched = numberFormatter.format(nodesSearched).replace(",", ".");
 
-        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, !botIsWhite) + " having searched: " + formattedNodesSearched + " nodes");
+        System.out.println("Found this as the best move, with a score of: " + Board.getScore(currentBoard, botIsWhite) + " having searched: " + formattedNodesSearched + " nodes");
         Board.printBoard(currentBoard);
 
         newGameState.setWhiteToMove(isWhiteToMove);
@@ -208,7 +210,7 @@ public class Bot {
 
         //STEP 6: SPECIFIC ROOK/KING LOGIC
         //STEP 6.1: If we moved the king or a rook, we need to note that we lost castling rights
-        castlingHistory[historyIndex] = castlingHistory[historyIndex-1]; //First we assume that we carry our the previous state
+        System.arraycopy(castlingHistory[historyIndex-1], 0, castlingHistory[historyIndex],0,4); //First we assume that we carry our the previous state
         if (pieceType == 6){ //White moved their king, so castling is now impossible for white
             castlingHistory[historyIndex][0] = false;
             castlingHistory[historyIndex][1] = false;
@@ -237,7 +239,30 @@ public class Bot {
 
         //STEP 6.2: what if we are making a castling move?
         if(IntegerEncoder.decodeIsCastle(move)){
-            //Then we make the logic cool and good, for example we need to restore castling rights!
+            if (IntegerEncoder.decodeToSquare(move) == 6){ //White is castling king side
+                currentBoard[6] = 6;
+                currentBoard[5] = 4;
+                currentBoard[4] = 0;
+                currentBoard[7] = 0;
+            }
+            if (IntegerEncoder.decodeToSquare(move) == 2){ //White is castling queen side
+                currentBoard[2] = 6;
+                currentBoard[3] = 4;
+                currentBoard[4] = 0;
+                currentBoard[0] = 0;
+            }
+            if (IntegerEncoder.decodeToSquare(move) == 118){ //black is castling king side
+                currentBoard[118] = 14;
+                currentBoard[117] = 12;
+                currentBoard[116] = 0;
+                currentBoard[119] = 0;
+            }
+            if (IntegerEncoder.decodeToSquare(move) == 114){ //black is castling queen side
+                currentBoard[114] = 14;
+                currentBoard[115] = 12;
+                currentBoard[116] = 0;
+                currentBoard[112] = 0;
+            }
         }
 
         //Finally we change the side to act
@@ -297,10 +322,32 @@ public class Bot {
         historyIndex--;
 
         //If it is castling
-        if(IntegerEncoder.decodeIsCastle(move)){
-
+        if(IntegerEncoder.decodeIsCastle(move)) {
+            if (IntegerEncoder.decodeToSquare(move) == 6) { //White is castling king side
+                currentBoard[6] = 0;
+                currentBoard[5] = 0;
+                currentBoard[4] = 6;
+                currentBoard[7] = 4;
+            }
+            if (IntegerEncoder.decodeToSquare(move) == 2) { //White is castling queen side
+                currentBoard[2] = 0;
+                currentBoard[3] = 0;
+                currentBoard[4] = 6;
+                currentBoard[0] = 4;
+            }
+            if (IntegerEncoder.decodeToSquare(move) == 118) { //black is castling king side
+                currentBoard[118] = 0;
+                currentBoard[117] = 0;
+                currentBoard[116] = 14;
+                currentBoard[119] = 12;
+            }
+            if (IntegerEncoder.decodeToSquare(move) == 114) { //black is castling queen side
+                currentBoard[114] = 0;
+                currentBoard[115] = 0;
+                currentBoard[116] = 14;
+                currentBoard[112] = 12;
+            }
         }
-
     }
 
     static String convertIndexToCoordinates(int index){
@@ -376,6 +423,7 @@ public class Bot {
 
         if(isMax){
             //Find all new moves on this depth
+            counter = MoveController.getCastling(isWhiteToMove, currentBoard, moveList[depth],castlingHistory[depth][0],castlingHistory[depth][1],castlingHistory[depth][2],castlingHistory[depth][3],counter);
             for (int i = 0; i < 128; i++) {
                 counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth],enPassantHistory[historyIndex], counter);
             }
@@ -432,6 +480,7 @@ public class Bot {
             return alpha;
         }
         else{
+            counter = MoveController.getCastling(isWhiteToMove, currentBoard, moveList[depth],castlingHistory[depth][0],castlingHistory[depth][1],castlingHistory[depth][2],castlingHistory[depth][3],counter);
             for (int i = 0; i < 128; i++) {
                 counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth],enPassantHistory[historyIndex], counter);
             }
