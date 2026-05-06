@@ -83,7 +83,7 @@ public class Controller implements Initializable {
 
     @FXML
     public void makeMove(){
-        gameState = Bot.getNextMove(gameState, 1000);
+        gameState = Bot.getNextMove(gameState, 30000);
         history.add(Translator.gameStateToFEN(gameState));
         historyPointer++;
         swapTurn();
