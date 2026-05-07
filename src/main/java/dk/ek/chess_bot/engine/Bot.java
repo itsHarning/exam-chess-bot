@@ -51,7 +51,7 @@ public class Bot {
 
         botIsWhite = gameState.isWhiteToMove();
 
-        int max_depth = 25; // Max depth, if program somehow reaches that before timer runs out
+        int max_depth = 100; // Max depth, if program somehow reaches that before timer runs out
         GameState newGameState = new GameState();
         int bestMoveFoundInPrevious = 0;
         int bestMoveFound = 0;
@@ -97,7 +97,7 @@ public class Bot {
                 //
                 int score = alphaBeta(possibleMoves, 0, depth, false, alpha, beta);
                 unMakeMove(possibleMoves[0][i]);
-                if (score == nullReturn) break; // ASK if better way to do
+                if (score == nullReturn) break;
 
                 if (score > alpha) {
                     alpha = score;
