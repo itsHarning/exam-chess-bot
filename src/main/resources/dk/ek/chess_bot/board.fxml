@@ -35,9 +35,9 @@
           <RowConstraints prefHeight="10.0" vgrow="SOMETIMES" />
       </rowConstraints>
     </GridPane>
-    <VBox prefHeight="200.0" prefWidth="500.0">
-        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-            <TextField fx:id="fenField" prefHeight="25.0" prefWidth="400.0" text="FEN">
+    <VBox prefHeight="200.0" prefWidth="550.0">
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="250.0">
+            <TextField fx:id="fenField" prefHeight="25.0" prefWidth="450.0" text="FEN">
                 <HBox.margin>
                     <Insets right="5.0" />
                 </HBox.margin>

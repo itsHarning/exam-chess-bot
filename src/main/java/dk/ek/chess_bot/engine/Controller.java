@@ -50,7 +50,8 @@ public class Controller implements Initializable {
     private int clickedPiece;
     private int fromIndex;
 
-    private String selectedPiece = "";
+    private String selectedPiece = "play";
+    private String FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
 
 	private GameState gameState;
     private LinkedList<String> history = new LinkedList<>();
@@ -103,7 +104,9 @@ public class Controller implements Initializable {
         }
         gameState.setEnPassantIndex(enPassantInput);
         gameState = Bot.getNextMove(gameState, 15_000);
-        history.add(Translator.gameStateToFEN(gameState));
+        FEN = Translator.gameStateToFEN(gameState);
+        history.add(FEN);
+        fenField.setText(FEN);
         historyPointer++;
         swapTurn();
 
@@ -120,7 +123,9 @@ public class Controller implements Initializable {
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		this.gameState = new GameState();
-        history.add(Translator.gameStateToFEN(gameState));
+        FEN = Translator.gameStateToFEN(gameState);
+        history.add(FEN);
+        fenField.setText(FEN);
 		whiteTurn.setSelected(gameState.isWhiteToMove());
 		blackTurn.setSelected(!gameState.isWhiteToMove());
 
@@ -213,6 +218,17 @@ public class Controller implements Initializable {
                 int finalI = i;
                 int finalJ = j;
                 pane.setOnMousePressed((MouseEvent event) -> {
+                    if (!selectedPiece.equals("play")) {
+                        System.out.println(selectedPiece);
+                        clickedPane = pane;
+                        clickedPiece = 1;
+                        board[convertTo0x88(finalI,finalJ)] = clickedPiece;
+                        gameState.setCurrentBoard(board);
+
+                        renderBoard();
+                        return;
+                    }
+
                     if (clickedPane == null){
                         System.out.println("You clicked a pane");
                         clickedPiece = board[convertTo0x88(finalI, finalJ)];
@@ -226,22 +242,23 @@ public class Controller implements Initializable {
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
                                 System.out.println("Found moves");
-                                System.out.println((targetXY[0] +1 ) + ", " + (targetXY[1]+1));
-                                panes[7-targetXY[1]][targetXY[0]].getStyleClass().add("target");
+                                System.out.println((targetXY[0] + 1 ) + ", " + (targetXY[1] + 1));
+                                panes[7 - targetXY[1]][targetXY[0]].getStyleClass().add("target");
                             }
 
-                            setSelectedPaneStyling();
+                            clickedPane.getStyleClass().add("clicked");
                         }
-                    }
-                    else{
-                        System.out.println("You cliced away from a pane");
+                    } else {
+                        System.out.println("You clicked away from a pane");
                         clickedPane.getStyleClass().remove("clicked");
 
                         board[convertTo0x88(finalI,finalJ)] = clickedPiece;
                         board[fromIndex] = 0;
 
                         gameState.setCurrentBoard(board);
-                        history.add(Translator.gameStateToFEN(gameState));
+                        FEN = Translator.gameStateToFEN(gameState);
+                        history.add(FEN);
+                        fenField.setText(FEN);
                         historyPointer++;
                         gameState.setWhiteToMove(!gameState.isWhiteToMove());
                         swapTurn();
@@ -249,7 +266,6 @@ public class Controller implements Initializable {
                         clickedPane = null;
                         clickedPiece = 0;
                         renderBoard();
-
                     }
                 });
             }
@@ -340,7 +356,9 @@ public class Controller implements Initializable {
         System.out.println("Reverting game state");
         if (historyPointer>0) {
             historyPointer--;
-            gameState = Translator.gameStateFromFEN(history.get(historyPointer));
+            FEN = history.get(historyPointer);
+            gameState = Translator.gameStateFromFEN(FEN);
+            fenField.setText(FEN);
             history.removeLast();
             buildBoardRep();
             renderBoard();

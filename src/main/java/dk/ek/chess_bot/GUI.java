@@ -12,7 +12,7 @@ public class GUI extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(GUI.class.getResource("board.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1150, 640);
+        Scene scene = new Scene(fxmlLoader.load(), 1200, 640);
         String css = this.getClass().getResource("style.css").toExternalForm();
         System.out.println("Found: " + css);
         scene.getStylesheets().add(css);
