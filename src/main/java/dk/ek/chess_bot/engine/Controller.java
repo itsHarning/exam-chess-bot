@@ -237,6 +237,9 @@ public class Controller implements Initializable {
                         board[fromIndex] = 0;
 
                         gameState.setCurrentBoard(board);
+                        if(!gameState.isWhiteToMove()){
+                            gameState.setTotalMoves(gameState.getTotalMoves() + 1);
+                        }
                         history.add(Translator.gameStateToFEN(gameState));
                         historyPointer++;
                         gameState.setWhiteToMove(!gameState.isWhiteToMove());
