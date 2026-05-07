@@ -23,7 +23,7 @@ public class IntegerEncoder {
         encoded = (capturePieceType<<21)|encoded;
 
         //Here we need to add the score for the move to the end. Implementation pending. 10 is placeholder
-        encodeScore(encoded);
+        encoded = encodeScore(encoded);
 
         return encoded;
     }
@@ -124,7 +124,7 @@ public class IntegerEncoder {
 
 
     public static void main(String[] args) {
-        int a = encodeMove(7, 23, 1, true, 5, false, false);
+        int a = encodeMove(7, 23, 1, true, 5, false, true);
 
         System.out.println(a);
         System.out.println(Integer.toBinaryString(a));

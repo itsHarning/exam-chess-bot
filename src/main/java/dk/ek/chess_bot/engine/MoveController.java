@@ -13,9 +13,9 @@ public class MoveController {
     private static final int[] KING_QUEEN_DIRECTIONS = {16, 1, -16, -1, 15, 17, -15, -17};
     private static final int[] KNIGHT_MOVES = {33, 31, 18, -14, -33, -31, -18, 14};
 
-    public static int getMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter){
+    public static int getMoves(boolean isWhite, int pos, int[] board, int[] buffer, int enPassantIndex, int counter){
         return switch (board[pos]) {
-            case 1, 9 -> getPawnMoves(isWhite, pos, board, buffer, counter);
+            case 1, 9 -> getPawnMoves(isWhite, pos, board, buffer, enPassantIndex, counter);
             case 2, 10 -> getNonSlidingMoves(isWhite, pos, board, KNIGHT_MOVES, buffer, counter);
             case 3, 11 -> getAllSlidingMoves(isWhite, pos, board, BISHOP_DIRECTIONS, buffer, counter);
             case 4, 12 -> getAllSlidingMoves(isWhite, pos, board, ROOK_DIRECTIONS, buffer, counter);
@@ -25,7 +25,7 @@ public class MoveController {
         };
     }
 
-    public static int getPawnMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter) {
+    public static int getPawnMoves(boolean isWhite, int pos, int[] board, int[] buffer, int enPassantIndex, int counter) {
         int piece = board[pos];
         if(isWhite && piece != 1) return counter;
         if(!isWhite && piece != 9) return counter;
@@ -48,20 +48,25 @@ public class MoveController {
             }
         }
         // Check if attack is possible
-        if(!isOffBoard(pos+forward+1) && (isEnemy(isWhite, board[pos+forward+1]))) {
+        int attackIndex1 = pos+forward+1;
+        if(!isOffBoard(attackIndex1) && (isEnemy(isWhite, board[pos+forward+1])) || (attackIndex1 == enPassantIndex && enPassantIndex != -1)) {
             buffer[counter++] = IntegerEncoder.encodeMove(
                     pos, pos+forward+1, piece, true, board[pos+forward+1], false, false
             );
         }
         // Check both possible attacks
-        if(!isOffBoard(pos+forward-1) && (isEnemy(isWhite, board[pos+forward-1]))) {
+        int attackIndex2 = pos+forward-1;
+        if(!isOffBoard(attackIndex2) && (isEnemy(isWhite, board[pos+forward-1])) || (attackIndex2 == enPassantIndex && enPassantIndex != -1)) {
             buffer[counter++] = IntegerEncoder.encodeMove(
                     pos, pos+forward-1, piece, true, board[pos+forward-1], false, false
             );
         }
 
+
         return counter;
     }
+
+
 
     public static boolean pawnAtStart(boolean isWhite, int pos) {
         if(isWhite) {return (16 <= pos && pos < 24);}
@@ -184,7 +189,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 4, false)
                             && !ThreatDetector.isSquareThreatened(board, 5, false)
                             && !ThreatDetector.isSquareThreatened(board, 6, false)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 4, 6, WKING, false, 0, false, true
                         );
@@ -199,7 +203,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 4, false)
                             && !ThreatDetector.isSquareThreatened(board, 2, false)
                             && !ThreatDetector.isSquareThreatened(board, 3, false)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 4, 2, WKING, false, 0, false, true
                         );
@@ -214,7 +217,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 116, true)
                             && !ThreatDetector.isSquareThreatened(board, 117, true)
                             && !ThreatDetector.isSquareThreatened(board, 118, true)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 116, 118, BKING, false, 0, false, true
                         );
@@ -229,7 +231,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 116, true)
                             && !ThreatDetector.isSquareThreatened(board, 115, true)
                             && !ThreatDetector.isSquareThreatened(board, 114, true)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 116, 114, BKING, false, 0, false, true
                         );
@@ -315,14 +316,14 @@ public class MoveController {
         int [] board = new Board().board;
 
         int[] buffer = new int[100];
-        board[81] = 2;
-        board[83] = 2;
+        board[50] = 1;
+        board[18] = 0;
+        board[51] = 9;
         //int amount = getAllSlidingMoves(false, 1, board, BISHOP_DIRECTIONS, buffer, 0);
-        int nonSliding = getPawnMoves(false, 98, board, buffer, 0);
+        int nonSliding = getPawnMoves(false, 51, board, buffer, 34, 0);
 
-        for(int i: buffer){
-            System.out.println(IntegerEncoder.decodeFromSquare(i) + " -> " + IntegerEncoder.decodeToSquare(i));
+        for (int i = 0; i < nonSliding; i++) {
+            System.out.println(IntegerEncoder.decodeFromSquare(buffer[i]) + " -> " + IntegerEncoder.decodeToSquare(buffer[i]));
         }
-        System.out.println(IntegerEncoder.decodeToSquare(buffer[1]));
     }
 }
