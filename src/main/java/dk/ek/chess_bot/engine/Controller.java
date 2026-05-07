@@ -256,6 +256,9 @@ public class Controller implements Initializable {
                         board[fromIndex] = 0;
 
                         gameState.setCurrentBoard(board);
+                        if(!gameState.isWhiteToMove()){
+                            gameState.setTotalMoves(gameState.getTotalMoves() + 1);
+                        }
                         FEN = Translator.gameStateToFEN(gameState);
                         history.add(FEN);
                         fenField.setText(FEN);
