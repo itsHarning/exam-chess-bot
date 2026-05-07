@@ -135,6 +135,17 @@ public class Bot {
         System.out.println("score before: " + Board.getScore(currentBoard, botIsWhite));
         makeMove(bestMoveFoundInPrevious);
 
+
+        //Total Move
+        if (isWhiteToMove) {
+            totalMoves++;
+        }
+        newGameState.setTotalMoves(totalMoves);
+
+        //Half Move
+        // check EnPassant is -1 then reset the half clock, otherwise raise with 1.
+        //TODO HAR IDE! lav ny variabel hvor det tjekke EnPassant variable, hvis det er 0-119, true, hvis under eller over så false!
+
         DecimalFormat numberFormatter = new DecimalFormat("#,###");
         String formattedNodesSearched = numberFormatter.format(nodesSearched).replace(",", ".");
 
