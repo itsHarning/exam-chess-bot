@@ -1,7 +1,10 @@
 package dk.ek.chess_bot.engine;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.input.MouseButton;
@@ -20,7 +23,10 @@ import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class Controller implements Initializable {
 
-	@FXML
+    @FXML
+    private ComboBox piecePicker;
+
+    @FXML
 	private GridPane grid;
 
 	@FXML
@@ -40,9 +46,11 @@ public class Controller implements Initializable {
     private int from;
 	private int to;
 
-    Pane clickedPane;
-    int clickedPiece;
-    int fromIndex;
+    private Pane clickedPane;
+    private int clickedPiece;
+    private int fromIndex;
+
+    private String selectedPiece = "";
 
 	private GameState gameState;
     private LinkedList<String> history = new LinkedList<>();
@@ -87,14 +95,14 @@ public class Controller implements Initializable {
     @FXML
     public void makeMove(){
         int enPassantInput = -1;
-        try{
+        try {
             enPassantInput = Integer.parseInt(enPassantField.getText());
             System.out.println("En passant index set as: " + enPassantInput);
-        }catch (Exception e){
+        } catch (Exception e){
             System.out.println("No input in field");
         }
         gameState.setEnPassantIndex(enPassantInput);
-        gameState = Bot.getNextMove(gameState, 15000);
+        gameState = Bot.getNextMove(gameState, 15_000);
         history.add(Translator.gameStateToFEN(gameState));
         historyPointer++;
         swapTurn();
@@ -104,25 +112,9 @@ public class Controller implements Initializable {
 
 	@FXML
 	public void boardToFEN() {
-		printBoard(gameState.getCurrentBoard());
+        Board.printBoard(gameState.getCurrentBoard());
 
 		System.out.println(Translator.gameStateToFEN(gameState));
-	}
-
-	private static void printBoard(int[] board) {
-		for (int rank = 7; rank >= 0; rank--) {
-			for (int file = 0; file < 8; file++) {
-				int index = rank * 16 + file;
-				int piece = board[index];
-
-				if (piece == EMPTY) {
-					System.out.print(". ");
-				} else {
-					System.out.print(piece + " ");
-				}
-			}
-			System.out.println();
-		}
 	}
 
 	@Override
@@ -131,6 +123,18 @@ public class Controller implements Initializable {
         history.add(Translator.gameStateToFEN(gameState));
 		whiteTurn.setSelected(gameState.isWhiteToMove());
 		blackTurn.setSelected(!gameState.isWhiteToMove());
+
+        // Populate the piece picker combo box with pieces
+        piecePicker.getItems().setAll("play", "pawn", "knight", "bishop", "rook", "queen", "king");
+
+        // Listens to the changes of the piece picker combo box and updates selectedPiece
+        piecePicker.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> selected, String oldPiece, String newPiece) {
+                selectedPiece = newPiece != null ? newPiece : selectedPiece;
+                System.out.println(selectedPiece);
+            }
+        });
 
         populateGrid();
 		buildBoardRep();
