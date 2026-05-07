@@ -220,10 +220,25 @@ public class Controller implements Initializable {
                 pane.setOnMousePressed((MouseEvent event) -> {
                     if (!selectedPiece.equals("play")) {
                         System.out.println(selectedPiece);
-                        clickedPane = pane;
-                        clickedPiece = 1;
+                        switch (selectedPiece) {
+                            case "pawn" -> clickedPiece = 1;
+                            case "knight" -> clickedPiece = 2;
+                            case "bishop" -> clickedPiece = 3;
+                            case "rook" -> clickedPiece = 4;
+                            case "queen" -> clickedPiece = 5;
+                            case "king" -> clickedPiece = 6;
+                        }
+
+                        if (!gameState.isWhiteToMove()) {
+                            clickedPiece = clickedPiece + 8;
+                        }
+
                         board[convertTo0x88(finalI,finalJ)] = clickedPiece;
                         gameState.setCurrentBoard(board);
+                        FEN = Translator.gameStateToFEN(gameState);
+                        history.add(FEN);
+                        fenField.setText(FEN);
+                        historyPointer++;
 
                         renderBoard();
                         return;
