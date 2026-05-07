@@ -1,9 +1,5 @@
 package dk.ek.chess_bot.engine;
 
-import dk.ek.chess_bot.engine.Board;
-import dk.ek.chess_bot.engine.IntegerEncoder;
-import dk.ek.chess_bot.engine.ThreatDetector;
-
 import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class MoveController {
@@ -12,6 +8,9 @@ public class MoveController {
     private static final int[] BISHOP_DIRECTIONS = {15, 17, -15, -17};
     private static final int[] KING_QUEEN_DIRECTIONS = {16, 1, -16, -1, 15, 17, -15, -17};
     private static final int[] KNIGHT_MOVES = {33, 31, 18, -14, -33, -31, -18, 14};
+
+    private static final int[] WHITE_PROMOS = {WROOK, WKNIGHT, WBISHOP, WQUEEN};
+    private static final int[] BLACK_PROMOS = {BROOK, BKNIGHT, BBISHOP, BQUEEN};
 
     public static int getMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter){
         return switch (board[pos]) {
@@ -35,37 +34,84 @@ public class MoveController {
         if (isWhite) {forward = 16;}
         else {forward = -16;}
 
+        int target = pos + forward;
+        boolean isPromo = isPromo(target);
+
         // Check forward
-        if(!isOffBoard(pos+forward) && board[pos+forward] == 0){
-            buffer[counter++] = IntegerEncoder.encodeMove(
-                    pos, pos+forward, piece, false, 0
-            , false, false);
-            // If pawn has not moved, check the square further forward
-            if(!isOffBoard(pos+forward+forward) && board[pos+forward+forward] == 0 && pawnAtStart(isWhite, pos)) {
+        if(!isOffBoard(target) && board[target] == 0){
+            // If promo, encode for all promotion types
+            if(isPromo) {
+                for (int promoPiece : pawnPromotions(isWhite)) {
+                    buffer[counter++] = IntegerEncoder.encodeMove(
+                            pos, target, promoPiece, false, 0, true, false);
+                }
+            } else {
+                // Else encode forward
                 buffer[counter++] = IntegerEncoder.encodeMove(
-                        pos, pos+forward+forward, piece, false, 0, false, false
-                );
+                        pos, target, piece, false, 0, false, false);
+                // And check if pawn has moved, then encode double forward
+                if(!isOffBoard(target+forward) && board[target+forward] == 0 && pawnAtStart(isWhite, pos)) {
+                    buffer[counter++] = IntegerEncoder.encodeMove(
+                            pos, target+forward, piece, false, 0, false, false
+
+                    );
+                }
             }
         }
+
         // Check if attack is possible
-        if(!isOffBoard(pos+forward+1) && (isEnemy(isWhite, board[pos+forward+1]))) {
-            buffer[counter++] = IntegerEncoder.encodeMove(
-                    pos, pos+forward+1, piece, true, board[pos+forward+1], false, false
-            );
-        }
-        // Check both possible attacks
-        if(!isOffBoard(pos+forward-1) && (isEnemy(isWhite, board[pos+forward-1]))) {
-            buffer[counter++] = IntegerEncoder.encodeMove(
-                    pos, pos+forward-1, piece, true, board[pos+forward-1], false, false
-            );
+        int attackIndex1 = target+1;
+        int attackIndex2 = target-1;
+
+        // If promotion, encode move for each promotion piece, where we set piece moving to the promotion piece
+        if(isPromo) {
+            for (int promoPiece : pawnPromotions(isWhite)) {
+                counter = checkPawnAttacks(attackIndex1, isWhite, board, buffer, counter, pos, promoPiece, true);
+                counter = checkPawnAttacks(attackIndex2, isWhite, board, buffer, counter, pos, promoPiece, true);
+            }
+            // Else just check regular attacks
+        } else {
+            counter = checkPawnAttacks(attackIndex1, isWhite, board, buffer, counter, pos, piece, false);
+            counter = checkPawnAttacks(attackIndex2, isWhite, board, buffer, counter, pos, piece, false);
         }
 
+
+//        if(!isOffBoard(attackIndex1) && (isEnemy(isWhite, board[attackIndex1]))) {
+//            buffer[counter++] = IntegerEncoder.encodeMove(
+//                    pos, attackIndex1, piece, true, board[attackIndex1], isPromo, false
+//            );
+//        }
+//
+//        if(!isOffBoard(attackIndex2) && (isEnemy(isWhite, board[attackIndex2]))) {
+//            buffer[counter++] = IntegerEncoder.encodeMove(
+//                    pos, attackIndex2, piece, true, board[attackIndex2], isPromo, false
+//            );
+//        }
+
         return counter;
+    }
+
+    // Used for pawn movement when encoding move
+    public static boolean isPromo(int target){
+            return (target >= 112 && target < 120) || (target >= 0 && target < 8);
+    }
+
+    // Encode pawn attack - for promos, the piece transformed into is encoded as piece moving
+    public static int checkPawnAttacks(int attackIndex, boolean isWhite, int[] board, int [] buffer, int counter, int pos, int piece, boolean isPromo) {
+        if(!isOffBoard(attackIndex) && (isEnemy(isWhite, board[attackIndex]))) {
+            buffer[counter++] = IntegerEncoder.encodeMove(
+                    pos, attackIndex, piece, true, board[attackIndex], isPromo, false
+            );
+        } return counter;
     }
 
     public static boolean pawnAtStart(boolean isWhite, int pos) {
         if(isWhite) {return (16 <= pos && pos < 24);}
         else {return (96 <= pos && pos < 104);}
+    }
+
+    public static int[] pawnPromotions(boolean isWhite) {
+        return isWhite ? WHITE_PROMOS : BLACK_PROMOS;
     }
 
     public static int getAllSlidingMoves(boolean isWhite, int pos, int[] board, int[] directions, int[] buffer, int counter) {
@@ -103,21 +149,6 @@ public class MoveController {
                 target += direction;
             }
         }
-        /* if(!isOffBoard(target)){
-            // If square is empty, encode as a valid move
-            if(board[target] == 0){
-                buffer[counter++] = IntegerEncoder.encodeMove(
-                        pos, target, piece, false, 0, false, false
-                );
-                // Call this method with target as new position
-                counter = getSlidingMoves(isWhite, pos, board, direction+direction, buffer, counter);
-                // If square is an enemy, encode it
-            } else if (isEnemy(isWhite,board[target])){
-                buffer[counter++] = IntegerEncoder.encodeMove(
-                        pos, target, piece, true, board[target], false, false
-                );
-            }
-        } */
 
         return counter;
     }
@@ -242,7 +273,36 @@ public class MoveController {
         return counter;
     }
 
+    void testIsPromo(int pawnPos){
+        int[] board = Board.getFreshBoard();
+        board[pawnPos] = BPAWN;
+
+        int[] buffer = new int [100];
+
+
+        int result = getPawnMoves(false, pawnPos, board,buffer, 0);
+
+        System.out.println("Position: " + pawnPos + ", Pawn moves: " + result);
+        for (int i = 0; i < result; i++) {
+            int move = buffer[i];
+            System.out.println(IntegerEncoder.decodeFromSquare(move) + " -> "
+                    + IntegerEncoder.decodeToSquare(move)
+                    + ", PROMO:" + IntegerEncoder.decodeIsPromo(move)
+            + ", NEW PIECE: " + IntegerEncoder.decodeOwnPieceType(move)
+            + ", MOVE SCORE: " + IntegerEncoder.decodeScore(move));
+        }
+        System.out.println();
+    }
+
+
     public static void main(String[] args) {
+
+        MoveController m = new MoveController();
+        m.testIsPromo(17);
+        m.testIsPromo(16);
+        m.testIsPromo(33);
+        m.testIsPromo(49);
+
         /* [TESTING]
         // TEST 1: White king side
         int[] board1 = new int[128];
@@ -312,6 +372,7 @@ public class MoveController {
         }
         */
 
+        /*
         int [] board = new Board().board;
 
         int[] buffer = new int[100];
@@ -324,5 +385,6 @@ public class MoveController {
             System.out.println(IntegerEncoder.decodeFromSquare(i) + " -> " + IntegerEncoder.decodeToSquare(i));
         }
         System.out.println(IntegerEncoder.decodeToSquare(buffer[1]));
+         */
     }
 }
