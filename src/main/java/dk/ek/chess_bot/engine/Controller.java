@@ -94,7 +94,7 @@ public class Controller implements Initializable {
             System.out.println("No input in field");
         }
         gameState.setEnPassantIndex(enPassantInput);
-        gameState = Bot.getNextMove(gameState, 10000);
+        gameState = Bot.getNextMove(gameState, 15000);
         history.add(Translator.gameStateToFEN(gameState));
         historyPointer++;
         swapTurn();

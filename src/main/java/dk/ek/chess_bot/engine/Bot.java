@@ -28,7 +28,7 @@ public class Bot {
     private static int nodesSearched = 0;
 
     private static Instant endTime;
-    static boolean ordering=false;
+    static boolean ordering=true;
 
     static int[] pv = new int[64];
     static int[] currentPath = new int[64];
