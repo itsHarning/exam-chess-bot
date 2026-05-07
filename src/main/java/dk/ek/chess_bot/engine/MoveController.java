@@ -75,19 +75,6 @@ public class MoveController {
             counter = checkPawnAttacks(attackIndex2, isWhite, board, buffer, counter, pos, piece, false);
         }
 
-
-//        if(!isOffBoard(attackIndex1) && (isEnemy(isWhite, board[attackIndex1]))) {
-//            buffer[counter++] = IntegerEncoder.encodeMove(
-//                    pos, attackIndex1, piece, true, board[attackIndex1], isPromo, false
-//            );
-//        }
-//
-//        if(!isOffBoard(attackIndex2) && (isEnemy(isWhite, board[attackIndex2]))) {
-//            buffer[counter++] = IntegerEncoder.encodeMove(
-//                    pos, attackIndex2, piece, true, board[attackIndex2], isPromo, false
-//            );
-//        }
-
         return counter;
     }
 
@@ -288,8 +275,8 @@ public class MoveController {
             System.out.println(IntegerEncoder.decodeFromSquare(move) + " -> "
                     + IntegerEncoder.decodeToSquare(move)
                     + ", PROMO:" + IntegerEncoder.decodeIsPromo(move)
-            + ", NEW PIECE: " + IntegerEncoder.decodeOwnPieceType(move)
-            + ", MOVE SCORE: " + IntegerEncoder.decodeScore(move));
+                    + ", NEW PIECE: " + IntegerEncoder.decodeOwnPieceType(move)
+                    + ", MOVE SCORE: " + IntegerEncoder.decodeScore(move));
         }
         System.out.println();
     }
