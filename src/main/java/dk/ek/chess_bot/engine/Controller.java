@@ -1,7 +1,10 @@
 package dk.ek.chess_bot.engine;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.input.MouseButton;
@@ -20,7 +23,10 @@ import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class Controller implements Initializable {
 
-	@FXML
+    @FXML
+    private ComboBox piecePicker;
+
+    @FXML
 	private GridPane grid;
 
 	@FXML
@@ -40,9 +46,12 @@ public class Controller implements Initializable {
     private int from;
 	private int to;
 
-    Pane clickedPane;
-    int clickedPiece;
-    int fromIndex;
+    private Pane clickedPane;
+    private int clickedPiece;
+    private int fromIndex;
+
+    private String selectedPiece = "play";
+    private String FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 0";
 
 	private GameState gameState;
     private LinkedList<String> history = new LinkedList<>();
@@ -87,15 +96,17 @@ public class Controller implements Initializable {
     @FXML
     public void makeMove(){
         int enPassantInput = -1;
-        try{
+        try {
             enPassantInput = Integer.parseInt(enPassantField.getText());
             System.out.println("En passant index set as: " + enPassantInput);
-        }catch (Exception e){
+        } catch (Exception e){
             System.out.println("No input in field");
         }
         gameState.setEnPassantIndex(enPassantInput);
-        gameState = Bot.getNextMove(gameState, 15000);
-        history.add(Translator.gameStateToFEN(gameState));
+        gameState = Bot.getNextMove(gameState, 15_000);
+        FEN = Translator.gameStateToFEN(gameState);
+        history.add(FEN);
+        fenField.setText(FEN);
         historyPointer++;
         swapTurn();
 
@@ -104,33 +115,31 @@ public class Controller implements Initializable {
 
 	@FXML
 	public void boardToFEN() {
-		printBoard(gameState.getCurrentBoard());
+        Board.printBoard(gameState.getCurrentBoard());
 
 		System.out.println(Translator.gameStateToFEN(gameState));
-	}
-
-	private static void printBoard(int[] board) {
-		for (int rank = 7; rank >= 0; rank--) {
-			for (int file = 0; file < 8; file++) {
-				int index = rank * 16 + file;
-				int piece = board[index];
-
-				if (piece == EMPTY) {
-					System.out.print(". ");
-				} else {
-					System.out.print(piece + " ");
-				}
-			}
-			System.out.println();
-		}
 	}
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		this.gameState = new GameState();
-        history.add(Translator.gameStateToFEN(gameState));
+        FEN = Translator.gameStateToFEN(gameState);
+        history.add(FEN);
+        fenField.setText(FEN);
 		whiteTurn.setSelected(gameState.isWhiteToMove());
 		blackTurn.setSelected(!gameState.isWhiteToMove());
+
+        // Populate the piece picker combo box with pieces
+        piecePicker.getItems().setAll("play", "pawn", "knight", "bishop", "rook", "queen", "king");
+
+        // Listens to the changes of the piece picker combo box and updates selectedPiece
+        piecePicker.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> selected, String oldPiece, String newPiece) {
+                selectedPiece = newPiece != null ? newPiece : selectedPiece;
+                System.out.println(selectedPiece);
+            }
+        });
 
         populateGrid();
 		buildBoardRep();
@@ -209,6 +218,32 @@ public class Controller implements Initializable {
                 int finalI = i;
                 int finalJ = j;
                 pane.setOnMousePressed((MouseEvent event) -> {
+                    if (!selectedPiece.equals("play")) {
+                        System.out.println(selectedPiece);
+                        switch (selectedPiece) {
+                            case "pawn" -> clickedPiece = 1;
+                            case "knight" -> clickedPiece = 2;
+                            case "bishop" -> clickedPiece = 3;
+                            case "rook" -> clickedPiece = 4;
+                            case "queen" -> clickedPiece = 5;
+                            case "king" -> clickedPiece = 6;
+                        }
+
+                        if (!gameState.isWhiteToMove()) {
+                            clickedPiece = clickedPiece + 8;
+                        }
+
+                        board[convertTo0x88(finalI,finalJ)] = clickedPiece;
+                        gameState.setCurrentBoard(board);
+                        FEN = Translator.gameStateToFEN(gameState);
+                        history.add(FEN);
+                        fenField.setText(FEN);
+                        historyPointer++;
+
+                        renderBoard();
+                        return;
+                    }
+
                     if (clickedPane == null){
                         System.out.println("You clicked a pane");
                         clickedPiece = board[convertTo0x88(finalI, finalJ)];
@@ -222,15 +257,14 @@ public class Controller implements Initializable {
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
                                 System.out.println("Found moves");
-                                System.out.println((targetXY[0] +1 ) + ", " + (targetXY[1]+1));
-                                panes[7-targetXY[1]][targetXY[0]].getStyleClass().add("target");
+                                System.out.println((targetXY[0] + 1 ) + ", " + (targetXY[1] + 1));
+                                panes[7 - targetXY[1]][targetXY[0]].getStyleClass().add("target");
                             }
 
-                            setSelectedPaneStyling();
+                            clickedPane.getStyleClass().add("clicked");
                         }
-                    }
-                    else{
-                        System.out.println("You cliced away from a pane");
+                    } else {
+                        System.out.println("You clicked away from a pane");
                         clickedPane.getStyleClass().remove("clicked");
 
                         board[convertTo0x88(finalI,finalJ)] = clickedPiece;
@@ -240,7 +274,9 @@ public class Controller implements Initializable {
                         if(!gameState.isWhiteToMove()){
                             gameState.setTotalMoves(gameState.getTotalMoves() + 1);
                         }
-                        history.add(Translator.gameStateToFEN(gameState));
+                        FEN = Translator.gameStateToFEN(gameState);
+                        history.add(FEN);
+                        fenField.setText(FEN);
                         historyPointer++;
                         gameState.setWhiteToMove(!gameState.isWhiteToMove());
                         swapTurn();
@@ -248,7 +284,6 @@ public class Controller implements Initializable {
                         clickedPane = null;
                         clickedPiece = 0;
                         renderBoard();
-
                     }
                 });
             }
@@ -339,7 +374,9 @@ public class Controller implements Initializable {
         System.out.println("Reverting game state");
         if (historyPointer>0) {
             historyPointer--;
-            gameState = Translator.gameStateFromFEN(history.get(historyPointer));
+            FEN = history.get(historyPointer);
+            gameState = Translator.gameStateFromFEN(FEN);
+            fenField.setText(FEN);
             history.removeLast();
             buildBoardRep();
             renderBoard();
