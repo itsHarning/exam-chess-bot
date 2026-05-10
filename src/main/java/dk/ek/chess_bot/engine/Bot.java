@@ -109,21 +109,24 @@ public class Bot {
             // For every move, make the move, get score, unmake the move
             for (int i = 0; i < counter; i++) {
                 makeMove(possibleMoves[0][i]);
-                int score = -100000;
+                int score = -1_000_000;
                 boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
                 if (!kingChecked){
                     validMoves = true;
                     score = alphaBeta(possibleMoves, 0, depth, false, alpha, beta);
-                }
-                unMakeMove(possibleMoves[0][i]);
-                if (score == nullReturn) break; //If we run out of time in AlphaBeta, break the loop
+                    unMakeMove(possibleMoves[0][i]);
+                    if (score == nullReturn) break; //If we run out of time in AlphaBeta, break the loop
 
-                if (score > alpha) {
-                    alpha = score;
-                    bestMoveFound = possibleMoves[0][i];
-                    currentPath[0] = possibleMoves[0][i];
-                    System.arraycopy(currentPath, 0, pv, 0, depth);
+                    if (score > alpha) {
+                        alpha = score;
+                        bestMoveFound = possibleMoves[0][i];
+                        currentPath[0] = possibleMoves[0][i];
+                        System.arraycopy(currentPath, 0, pv, 0, depth);
+                    }
+                }else{
+                    unMakeMove(possibleMoves[0][i]);
                 }
+
             }
 
             if(!validMoves){
@@ -456,8 +459,12 @@ public class Bot {
         nodesSearched++;
 
         if(depth == targetDepth){
-            if (botIsWhite) return Board.getScore(currentBoard);
-            else return -Board.getScore(currentBoard);
+            int score;
+            if (botIsWhite) score =  Board.getScore(currentBoard);
+            else score = -Board.getScore(currentBoard);
+            Board.printBoard(currentBoard);
+            System.out.println(score);
+            return score;
         }
 
 
