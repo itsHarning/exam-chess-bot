@@ -95,7 +95,7 @@ public class Bot {
 
             int nullReturn = -99_999;
 
-            //Step 5: Make each available move TODO - implement game end check here as well
+            //Step 5: Make each available move
             //Check PV first
             for (int i = 0; i < counter; i++) {
                 if (possibleMoves[0][i] == pv[0]) {
@@ -106,7 +106,8 @@ public class Bot {
                 }
             }
             boolean validMoves = false;
-            // For every move, make the move, get score, unmake the move
+
+            // For every move, make the move, get score, unmake the move -see alphaBeta for in depth comments
             for (int i = 0; i < counter; i++) {
                 makeMove(possibleMoves[0][i]);
                 int score = -1_000_000;
@@ -131,7 +132,7 @@ public class Bot {
 
             if(!validMoves){
                 System.out.println("There were no valid moves for this position");
-                gameState.setLoss(true);
+                gameState.setLoss(true); //If we had no moves, the game is lost for us
             }
 
             //Step 6: Make sure we still have time
@@ -475,6 +476,7 @@ public class Bot {
             counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth],enPassantHistory[historyIndex], counter);
         }
         //Check PV first
+        //We place the PV move at the front of the list, to check that first. PV move usually gives the biggest cutoff!
         for (int i = 0; i < counter; i++) {
             if (moveList[depth][i] == pv[depth]) {
                 int temp = moveList[depth][0];
@@ -483,19 +485,19 @@ public class Bot {
                 break;
             }
         }
-        boolean validMoves = false;
+        boolean validMoves = false; //We assume we don't have any legal moves
         if(isMax){
-
             //For each move on this depth, find best move and check it
             for (int i = 0; i < counter; i++) {
-                if (ordering && i != 0) {
-                    int bestIndex = i;
+                if (ordering && i != 0) { //When it is not the first move in the list(The PV move), we want to go through the list and find the one with highest score, which hopefully creates cutoff!
 
-                    for (int j = i + 1; j < counter; j++) {
+                    int bestIndex = i;
+                    for (int j = i + 1; j < counter; j++) { //A selection sort algorithm loops through the list once, and finds the highest score
                         if (IntegerEncoder.decodeScore(moveList[depth][j]) > IntegerEncoder.decodeScore(moveList[depth][i])) {
                             bestIndex = j;
                         }
                     }
+                    //we swap the current move with the one we found
                     int temp = moveList[depth][i];
                     moveList[depth][i] = moveList[depth][bestIndex];
                     moveList[depth][bestIndex] = temp;
@@ -504,79 +506,44 @@ public class Bot {
 
                 //Make move, recursive alphaBeta lives here
                 int move = moveList[depth][i];
-                    makeMove(move);
-                    boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
-                    int score = -10000000;
-                    if(!kingChecked){
-                        validMoves = true;
-                        score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
-                        unMakeMove(move);
-                        if (score == -99_999) break; // ASK if better way to do
-
-                        if (score > alpha) {
+                makeMove(move);
+                //We find out if the move we just made left our king in check. makeMove(move) flipped the side to move, so we check the opposite (our) side
+                boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
+                int score = -10000000;
+                if(!kingChecked){ //If the king is not in check, we can make this move!
+                    validMoves = true; //This means we found a valid move, and the game is not over
+                    score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta); //We keep going down the game tree
+                    unMakeMove(move); //We reset the changes
+                    if (score == -99_999) break; //If we got -99_999 back that means we ran out of time further down
+                        if (score > alpha) { //We found a better move than previously
                             alpha = score;
-                            currentPath[depth] = move;
-                            System.arraycopy(currentPath, 0, pv, 0, targetDepth);
+                            currentPath[depth] = move; //We update our path
+                            System.arraycopy(currentPath, 0, pv, 0, targetDepth); //NEEDED??
                         }
-                        if (beta <= alpha) {
+                        if (beta <= alpha) { //This move is so good, minimizer won't let us do it. THAT MEANS CUTOFF!
                             timesCutoff++;
                             long nodes = 0;
                             int pow = targetDepth-depth;
                             nodes = (long)Math.pow(counter,pow);
-                            estimatedNotesCutoff += nodes;
+                            estimatedNotesCutoff += nodes; //General stuff to estimate how much work we "save" compared to regular minimax
                             return alpha;
                         }
                     }else{
                         unMakeMove(move);
-                    }
-
-
-
-                    /*
-                if (ordering){
-
-                    int bestIndex = i+1;
-
-                    for (int j = i+2; j<counter; j++){
-                        if(IntegerEncoder.decodeScore(moveList[depth][j]) > IntegerEncoder.decodeScore(moveList[depth][i])){
-                            bestIndex = j;
-                        }
-                    }
-                    int temp = moveList[depth][i+1];
-                    moveList[depth][i+1] = moveList[depth][bestIndex];
-                    moveList[depth][bestIndex] = temp;
-                    /*
-                    for(int j = i+1; j < counter; j++){
-                        int currentMove = moveList[depth][j];
-                        int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
-
-                        if (currentMoveScore > currentMax) {
-                            // If current move is new max, switch with old fake max
-                            moveList[depth][i] = currentMove;
-                            moveList[depth][j] = currentBestMove;
-                            currentBestMove = currentMove;
-                            // Also set new REAL max
-                            currentMax = currentMoveScore;
-                        }
-                    }
-
-
                 }
-
-                     */
             }
-            if(!validMoves){
-                if(ThreatDetector.isKingInCheck(currentBoard, isWhiteToMove)){
+            if(!validMoves){ //If we don't have any valid moves, the game is over!
+                if(ThreatDetector.isKingInCheck(currentBoard, isWhiteToMove)){ //If our king is in check, that means checkmate!
                     return -100000+depth;
-                }else{
+                }else{ //If our king is not in check, but we have no valid moves, that means a stalemate. That is a 0
                     return 0;
                 }
             }
-            return alpha;
+            return alpha; //Finally we return alpha, if we did not return anything before
         }
-        else{
-            for (int i = 0; i < counter; i++) {
 
+        else{ //See isMax for general approach
+            for (int i = 0; i < counter; i++) {
                 if (ordering && i != 0) {
                     int bestIndex = i;
 
@@ -590,19 +557,18 @@ public class Bot {
                     moveList[depth][bestIndex] = temp;
 
                 }
-                    //Make move, recursive alphaBeta lives here
+                //Make move, recursive alphaBeta lives here
                 int move = moveList[depth][i];
                 System.out.println(IntegerEncoder.printMove(move));
 
-                    makeMove(move);
-                    boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
-                    int score = 1000000;
-                    if(!kingChecked){
-                        validMoves = true;
-                        score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
-                        unMakeMove(move);
-                        if (score == -99_999) break; // ASK if better way to do
-
+                makeMove(move);
+                boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
+                int score = 1000000;
+                if(!kingChecked){
+                    validMoves = true;
+                    score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
+                    unMakeMove(move);
+                    if (score == -99_999) break; // ASK if better way to do
                         if (score < beta) {
                             beta = score;
                             currentPath[depth] = move;
@@ -619,44 +585,6 @@ public class Bot {
                     }else{
                         unMakeMove(move);
                     }
-
-                //Sort
-                /*
-                if (ordering){
-                    int currentBestMove = moveList[depth][i];
-                    int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
-
-                    int bestIndex = i+1;
-
-                    for (int j = i+2; j<counter; j++){
-                        if(IntegerEncoder.decodeScore(moveList[depth][j]) > IntegerEncoder.decodeScore(moveList[depth][i])){
-                            bestIndex = j;
-                        }
-                    }
-                    int temp = moveList[depth][i+1];
-                    moveList[depth][i+1] = moveList[depth][bestIndex];
-                    moveList[depth][bestIndex] = temp;
-
-                    /*
-                    for(int j = i+1; j < counter; j++){
-                        int currentMove = moveList[depth][j];
-                        int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
-                        if (currentMoveScore > currentMax) {
-                            // If current move is new max, switch with old fake max
-                            moveList[depth][i] = currentMove;
-                            moveList[depth][j] = currentBestMove;
-                            currentBestMove = currentMove;
-                            // Also set new REAL max
-                            currentMax = currentMoveScore;
-                        }
-                    }
-
-
-                }
-
-                 */
-
-
             }
             if (!validMoves){
                 if (ThreatDetector.isKingInCheck(currentBoard, isWhiteToMove)){
