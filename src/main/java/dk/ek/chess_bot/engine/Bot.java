@@ -153,11 +153,11 @@ public class Bot {
         System.out.println();
         System.out.println("--------------------MOVE REPORT-----------------------");
         System.out.println("Final depth reached: " + finalDepth);
-        System.out.println("score before: " + Board.getScore(currentBoard, botIsWhite));
+        System.out.println("score before: " + Board.getScore(currentBoard));
 
         if(!gameState.isLoss()) makeMove(bestMoveFoundInPrevious);
 
-        System.out.println(" Score after: " + Board.getScore(currentBoard, botIsWhite));
+        System.out.println(" Score after: " + Board.getScore(currentBoard));
         DecimalFormat numberFormatter = new DecimalFormat("#,###");
         String formattedNodesSearched = numberFormatter.format(nodesSearched).replace(",", ".");
 
@@ -323,7 +323,8 @@ public class Bot {
         isWhiteToMove = !isWhiteToMove;
     }
 
-    static void unMakeMove(int move){ //Unmaking a move is essentially making a move in reverse
+    static void unMakeMove(int move){
+        //Unmaking a move is essentially making a move in reverse
         //STEP 1: We change back to be able to know who "We" are.
         isWhiteToMove = !isWhiteToMove;
 
@@ -455,7 +456,8 @@ public class Bot {
         nodesSearched++;
 
         if(depth == targetDepth){
-            return Board.getScore(currentBoard, botIsWhite);
+            if (botIsWhite) return Board.getScore(currentBoard);
+            else return -Board.getScore(currentBoard);
         }
 
 
@@ -493,23 +495,26 @@ public class Bot {
                     if(!kingChecked){
                         validMoves = true;
                         score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
-                    }
-                    unMakeMove(move);
-                    if (score == -99_999) break; // ASK if better way to do
+                        unMakeMove(move);
+                        if (score == -99_999) break; // ASK if better way to do
 
-                    if (score > alpha) {
-                        alpha = score;
-                        currentPath[depth] = move;
-                        System.arraycopy(currentPath, 0, pv, 0, targetDepth);
+                        if (score > alpha) {
+                            alpha = score;
+                            currentPath[depth] = move;
+                            System.arraycopy(currentPath, 0, pv, 0, targetDepth);
+                        }
+                        if (beta <= alpha) {
+                            timesCutoff++;
+                            long nodes = 0;
+                            int pow = targetDepth-depth;
+                            nodes = (long)Math.pow(counter,pow);
+                            estimatedNotesCutoff += nodes;
+                            return alpha;
+                        }
+                    }else{
+                        unMakeMove(move);
                     }
-                    if (beta <= alpha) {
-                        timesCutoff++;
-                        long nodes = 0;
-                        int pow = targetDepth-depth;
-                        nodes = (long)Math.pow(counter,pow);
-                        estimatedNotesCutoff += nodes;
-                        return alpha;
-                    }
+
                 }
 
                 if (ordering){
@@ -550,23 +555,26 @@ public class Bot {
                     if(!kingChecked){
                         validMoves = true;
                         score = alphaBeta(moveList, depth, targetDepth, !isMax, alpha, beta);
-                    }
-                    unMakeMove(move);
-                    if (score == -99_999) break; // ASK if better way to do
+                        unMakeMove(move);
+                        if (score == -99_999) break; // ASK if better way to do
 
-                    if (score < beta) {
-                        beta = score;
-                        currentPath[depth] = move;
-                        System.arraycopy(currentPath, 0, pv, 0, targetDepth);
+                        if (score < beta) {
+                            beta = score;
+                            currentPath[depth] = move;
+                            System.arraycopy(currentPath, 0, pv, 0, targetDepth);
+                        }
+                        if (beta <= alpha) {
+                            timesCutoff++;
+                            int nodes = 0;
+                            int pow = targetDepth-depth;
+                            nodes = (int)Math.pow(counter,pow);
+                            estimatedNotesCutoff += nodes;
+                            return beta;
+                        }
+                    }else{
+                        unMakeMove(move);
                     }
-                    if (beta <= alpha) {
-                        timesCutoff++;
-                        int nodes = 0;
-                        int pow = targetDepth-depth;
-                        nodes = (int)Math.pow(counter,pow);
-                        estimatedNotesCutoff += nodes;
-                        return beta;
-                    }
+
                 }
 
                 //Sort

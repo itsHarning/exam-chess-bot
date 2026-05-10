@@ -103,7 +103,7 @@ public class Board {
             -50,-30,-10,-30,-30,-30,-10,-50,        0,0,0,0,0,0,0,0
     };
 
-    public static int getScore(int[] board, boolean isWhite){
+    public static int getScore(int[] board){
         int score = 0;
         int phaseScore = 0; //Here we add the value of non pawn/king pieces to interpolate between early/mid/late game.
         boolean whiteKing = false;
@@ -180,8 +180,7 @@ public class Board {
             }
         }
 
-        if (isWhite){return score;} //If we are white we want the score as is calculated
-        else{return -score;} //If we are black we want the inverse
+        return score; //Always returns a positive score for white and a negative score for black
     }
 
     static final int[] phaseValues = new int[] {0, 4, 8, 12, 17, 21, 25, 29, 33, 37, 42, 46, 50, 54, 58, 62, 67, 71, 75, 79, 83, 88, 92, 96, 100};
@@ -406,7 +405,7 @@ public class Board {
         board[4] = 0;
         board[6] = 6;
 
-        System.out.println(getScore(board, true));
+        System.out.println(getScore(board));
     }
 
 }
