@@ -162,7 +162,10 @@ public class Board {
                     whiteKing = true;
                     score += 20000; //REMEMBER HIGH VALUE FOR THE KING!
                     if(phaseScore > 24) phaseScore = 24;
-                    score += (int) getPieceScore(kingEarlyScores, i, true);
+                    score += (int) lerp(
+                            getPieceScore(kingEarlyScores, i, true),
+                            getPieceScore(kingLateScores, i, true),
+                            phaseValues[phaseScore]);
                     break;
                 case 14:
                     blackKing = true;

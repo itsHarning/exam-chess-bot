@@ -119,7 +119,14 @@ public class IntegerEncoder {
         return (encodedInt>>24)&0xFF;
     }
 
+    public static String printMove(int move){
+        int fromSquare = decodeFromSquare(move);
+        int toSquare = decodeToSquare(move);
+        int pieceType = decodeOwnPieceType(move);
+        boolean capture = decodeIsCapture(move);
 
+        return "From: " + fromSquare + " - To: " + toSquare + " - Piece: " + pieceType + " - Capture? " + capture;
+    }
 
 
 

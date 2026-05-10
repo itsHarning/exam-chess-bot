@@ -94,7 +94,7 @@ public class Controller implements Initializable {
             System.out.println("No input in field");
         }
         gameState.setEnPassantIndex(enPassantInput);
-        gameState = Bot.getNextMove(gameState, 15000);
+        gameState = Bot.getNextMove(gameState, 1000);
         history.add(Translator.gameStateToFEN(gameState));
         historyPointer++;
         swapTurn();
@@ -413,6 +413,12 @@ public class Controller implements Initializable {
                 }
                 if (enPassantCoordinates[0] == j && 7-enPassantCoordinates[1] == i){
                     pane.getStyleClass().add("enPassant");
+                }
+                if(gameState.isLoss()){
+                    pane.getStyleClass().add("gameOver");
+                }
+                if(gameState.isWon()){
+                    pane.getStyleClass().add("bigDub");
                 }
             }
         }
