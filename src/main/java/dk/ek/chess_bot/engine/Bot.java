@@ -462,8 +462,6 @@ public class Bot {
             int score;
             if (botIsWhite) score =  Board.getScore(currentBoard);
             else score = -Board.getScore(currentBoard);
-            Board.printBoard(currentBoard);
-            System.out.println(score);
             return score;
         }
 
@@ -490,12 +488,22 @@ public class Bot {
 
             //For each move on this depth, find best move and check it
             for (int i = 0; i < counter; i++) {
-                int currentBestMove = moveList[depth][i];
-                int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
+                if (ordering && i != 0) {
+                    int bestIndex = i;
+
+                    for (int j = i + 1; j < counter; j++) {
+                        if (IntegerEncoder.decodeScore(moveList[depth][j]) > IntegerEncoder.decodeScore(moveList[depth][i])) {
+                            bestIndex = j;
+                        }
+                    }
+                    int temp = moveList[depth][i];
+                    moveList[depth][i] = moveList[depth][bestIndex];
+                    moveList[depth][bestIndex] = temp;
+
+                }
 
                 //Make move, recursive alphaBeta lives here
                 int move = moveList[depth][i];
-                if (move != 0) {
                     makeMove(move);
                     boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
                     int score = -10000000;
@@ -522,12 +530,26 @@ public class Bot {
                         unMakeMove(move);
                     }
 
-                }
 
+
+                    /*
                 if (ordering){
+
+                    int bestIndex = i+1;
+
+                    for (int j = i+2; j<counter; j++){
+                        if(IntegerEncoder.decodeScore(moveList[depth][j]) > IntegerEncoder.decodeScore(moveList[depth][i])){
+                            bestIndex = j;
+                        }
+                    }
+                    int temp = moveList[depth][i+1];
+                    moveList[depth][i+1] = moveList[depth][bestIndex];
+                    moveList[depth][bestIndex] = temp;
+                    /*
                     for(int j = i+1; j < counter; j++){
                         int currentMove = moveList[depth][j];
                         int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
+
                         if (currentMoveScore > currentMax) {
                             // If current move is new max, switch with old fake max
                             moveList[depth][i] = currentMove;
@@ -537,7 +559,11 @@ public class Bot {
                             currentMax = currentMoveScore;
                         }
                     }
+
+
                 }
+
+                     */
             }
             if(!validMoves){
                 if(ThreatDetector.isKingInCheck(currentBoard, isWhiteToMove)){
@@ -550,12 +576,24 @@ public class Bot {
         }
         else{
             for (int i = 0; i < counter; i++) {
-                int currentBestMove = moveList[depth][i];
-                int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
 
-                //Make move, recursive alphaBeta lives here
+                if (ordering && i != 0) {
+                    int bestIndex = i;
+
+                    for (int j = i + 1; j < counter; j++) {
+                        if (IntegerEncoder.decodeScore(moveList[depth][j]) > IntegerEncoder.decodeScore(moveList[depth][i])) {
+                            bestIndex = j;
+                        }
+                    }
+                    int temp = moveList[depth][i];
+                    moveList[depth][i] = moveList[depth][bestIndex];
+                    moveList[depth][bestIndex] = temp;
+
+                }
+                    //Make move, recursive alphaBeta lives here
                 int move = moveList[depth][i];
-                if (move != 0) {
+                System.out.println(IntegerEncoder.printMove(move));
+
                     makeMove(move);
                     boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
                     int score = 1000000;
@@ -582,10 +620,24 @@ public class Bot {
                         unMakeMove(move);
                     }
 
-                }
-
                 //Sort
+                /*
                 if (ordering){
+                    int currentBestMove = moveList[depth][i];
+                    int currentMax = IntegerEncoder.decodeScore(moveList[depth][i]);
+
+                    int bestIndex = i+1;
+
+                    for (int j = i+2; j<counter; j++){
+                        if(IntegerEncoder.decodeScore(moveList[depth][j]) > IntegerEncoder.decodeScore(moveList[depth][i])){
+                            bestIndex = j;
+                        }
+                    }
+                    int temp = moveList[depth][i+1];
+                    moveList[depth][i+1] = moveList[depth][bestIndex];
+                    moveList[depth][bestIndex] = temp;
+
+                    /*
                     for(int j = i+1; j < counter; j++){
                         int currentMove = moveList[depth][j];
                         int currentMoveScore = IntegerEncoder.decodeScore(currentMove);
@@ -598,7 +650,13 @@ public class Bot {
                             currentMax = currentMoveScore;
                         }
                     }
+
+
                 }
+
+                 */
+
+
             }
             if (!validMoves){
                 if (ThreatDetector.isKingInCheck(currentBoard, isWhiteToMove)){
