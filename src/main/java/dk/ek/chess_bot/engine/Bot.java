@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
@@ -19,8 +20,8 @@ public class Bot {
     private static boolean botIsWhite;
 
     private static int historyIndex; //To track things such as en passant indexes through time and castling rights through time, we need to maintain a history
-    private static int[] enPassantHistory = new int[32];//32 would be the maximum depth
-    private static boolean[][] castlingHistory = new boolean[32][4];//32 is the depth, and the four are the booleans we are tracking at each depth
+    private static int[] enPassantHistory = new int[64];//32 would be the maximum depth
+    private static boolean[][] castlingHistory = new boolean[64][4];//32 is the depth, and the four are the booleans we are tracking at each depth
     //WK, WQ, BK, BQ
 
     private static int bestMoveSoFar;
@@ -171,7 +172,7 @@ public class Bot {
         String formattedEstimatedNodesSearched = numberFormatter.format(estimatedNotesCutoff).replace(",", ".");
         System.out.println("Cut off: " + timesCutoff + " times. Having pruned an estimated: " + formattedEstimatedNodesSearched + " nodes");
         double ebf = Math.pow(nodesSearched, 1.0/finalDepth);
-        System.out.println("Estimated branching factor: " + ebf);
+        System.out.println("Effective branching factor: " + ebf);
         double nps = nodesSearched/(depthTime/1000.0);
         String formattedNps = numberFormatter.format(nps).replace(",", ".");
         System.out.println("Nodes per second: " + formattedNps);
@@ -559,7 +560,6 @@ public class Bot {
                 }
                 //Make move, recursive alphaBeta lives here
                 int move = moveList[depth][i];
-                System.out.println(IntegerEncoder.printMove(move));
 
                 makeMove(move);
                 boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
@@ -597,27 +597,129 @@ public class Bot {
         }
     }
 
+    static long perftRecurse(long movesFound, int depth, int desiredDepth, int[][] moveList){
+        depth++;
+
+        if(depth == desiredDepth){
+            movesFound++;
+            return movesFound;
+        }
+
+        int counter = 0;
+        counter = MoveController.getCastling(isWhiteToMove, currentBoard, moveList[depth], castlingHistory[historyIndex][0], castlingHistory[historyIndex][1], castlingHistory[historyIndex][2], castlingHistory[historyIndex][3], counter);
+        for (int i = 0; i < 128; i++) {
+            counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, moveList[depth], enPassantHistory[historyIndex], counter);
+        }
+        for (int i = 0; i < counter; i++) {
+            makeMove(moveList[depth][i]);
+            boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
+            if (!kingChecked){
+                movesFound = perftRecurse(movesFound, depth, desiredDepth, moveList);
+                unMakeMove(moveList[depth][i]);
+            }else{
+                unMakeMove(moveList[depth][i]);
+            }
+        }
+        return movesFound;
+    }
+
+    static long perftTest(GameState gameState, int desiredDepth) {
+        currentBoard = gameState.getCurrentBoard();
+        isWhiteToMove = gameState.isWhiteToMove();
+
+        historyIndex = 0; //The history index tracks the state of En Passant and castling, to restore rights correctly
+        enPassantHistory[0] = gameState.getEnPassantIndex(); //We need to track the history of en passant possibilities
+        castlingHistory[0][0] = gameState.isWhiteCastleKingSide(); //We set the history at index 0 to be the state from the gamestate
+        castlingHistory[0][1] = gameState.isWhiteCastleQueenSide();
+        castlingHistory[0][2] = gameState.isBlackCastleKingSide();
+        castlingHistory[0][3] = gameState.isBlackCastleQueenSide();
+
+        totalMoves = gameState.getTotalMoves();
+        halfMoveClock = gameState.getHalfMoveClock();
+
+        botIsWhite = gameState.isWhiteToMove();
+
+        int max_depth = desiredDepth; // Max depth, if program somehow reaches that before timer runs out
+        long movesFound = 0;
+        long[] movesFoundAtEach = new long[32];
+        HashMap<Integer, Long> perftResults = new HashMap<>();
+        perftResults.put(1, 20L);
+        perftResults.put(2, 400L);
+        perftResults.put(3, 8902L);
+        perftResults.put(4, 197_281L);
+        perftResults.put(5, 4_865_609L);
+        perftResults.put(6, 119_060_324L);
+        perftResults.put(7, 3_195_901_860L);
+        perftResults.put(8, 84_998_978_956L);
+        perftResults.put(9, 2_439_530_234_167L);
+        perftResults.put(10, 69_352_859_712_417L);
+
+        //Step 1: Iterative depth. We start at depth 1, then we go deeper every time we complete a full search.
+        for (int depth = 1; depth <= max_depth; depth++) {
+            System.out.println("Starting depth: " + depth);
+
+            //Step 2: Purge info from previous searches
+            historyIndex = 0;
+            bestMoveSoFar = 0;
+            nodesSearched = 0;
+            estimatedNotesCutoff = 0;
+            timesCutoff = 0;
+            movesFound = 0;
+
+
+            //Step 3: Instantiate array to store moves for the search
+            // Get possible moves, pack into possibleMoves[0], meaning first array of arrays
+            int[][] possibleMoves = new int[64][256];
+            int counter = 0; //Keep track of how many moves we find
+
+            //Step 4: Find the possible moves from the initial position. ALPHA BETA ROOT
+            counter = MoveController.getCastling(isWhiteToMove, currentBoard, possibleMoves[0],castlingHistory[0][0],castlingHistory[0][1],castlingHistory[0][2],castlingHistory[0][3],counter);
+            for (int i = 0; i < 128; i++) {
+                counter = MoveController.getMoves(isWhiteToMove, i, currentBoard, possibleMoves[0],enPassantHistory[historyIndex], counter);
+            }
+
+            // For every move, make the move, get score, unmake the move -see alphaBeta for in depth comments
+            for (int i = 0; i < counter; i++) {
+                makeMove(possibleMoves[0][i]);
+                boolean kingChecked = ThreatDetector.isKingInCheck(currentBoard, !isWhiteToMove);
+                if (!kingChecked){
+
+                    movesFound = perftRecurse(movesFound, 0, depth, possibleMoves);
+
+                    unMakeMove(possibleMoves[0][i]);
+
+                }else{
+                    unMakeMove(possibleMoves[0][i]);
+                }
+            }
+
+            movesFoundAtEach[depth] = movesFound;
+            System.out.println(movesFound);
+        }
+
+        System.out.println();
+        System.out.println("--------------------PERFT REPORT-----------------------");
+        System.out.println("Final depth reached: " + desiredDepth);
+        DecimalFormat numberFormatter = new DecimalFormat("#,###");
+        for (int i = 1; i < desiredDepth; i++) {
+            Long movesFoundAtDepth = movesFoundAtEach[i];
+            Long resultAtDepth = perftResults.get(i);
+            Long missingMoves = resultAtDepth-movesFoundAtDepth;
+
+            String formattedPerft = numberFormatter.format(movesFoundAtDepth).replace(",", ".");
+            String formattedResult = numberFormatter.format(resultAtDepth).replace(",", ".");
+            System.out.println("found " + formattedPerft + "/" + formattedResult + " moves at depth: " + i + " MISSING: " + missingMoves);
+        }
+        System.out.println("--------------------END REPORT-----------------------");
+
+        return movesFound;
+    }
+
     public static void main(String[] args) {
-        System.out.println(convertIndexToCoordinates(16));
 
         GameState gameState = new GameState();
 
-        int[] board = new int[] {
-                WROOK,  WKNIGHT, WBISHOP, WQUEEN, WKING, WBISHOP, WKNIGHT, WROOK,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                WPAWN,  WPAWN,   EMPTY,   EMPTY,  EMPTY, WPAWN,   WPAWN,   WPAWN,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                EMPTY,  EMPTY,   WPAWN,   WPAWN,  EMPTY, EMPTY,   EMPTY,   EMPTY,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                EMPTY,  BBISHOP, EMPTY,   EMPTY,  WPAWN, EMPTY,   EMPTY,   BQUEEN,       EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                EMPTY,  EMPTY,   EMPTY,   EMPTY,  BPAWN, EMPTY,   EMPTY,   EMPTY,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                EMPTY,  EMPTY,   EMPTY,   EMPTY,  EMPTY, EMPTY,   EMPTY,   EMPTY,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                BPAWN,  BPAWN,   BPAWN,   BPAWN,  EMPTY, BPAWN,   BPAWN,   BPAWN,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-                BROOK,  BKNIGHT, BBISHOP, EMPTY,  BKING, EMPTY,   BKNIGHT, BROOK,        EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY };
-        Board.printBoard(board);
-        gameState.setWhiteToMove(true);
-        gameState.setCurrentBoard(board);
-
-
-        getNextMove(gameState, 1000);
-
+        perftTest(gameState, 7);
 
     }
 }
