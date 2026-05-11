@@ -60,9 +60,14 @@ public class IntegerEncoder {
         if(decodeIsPromo(move)) score += 50; //53
 
         // Attempt at LVA - HVT
+        int ownValue;
+
         if(decodeIsCapture(move)) {
-            // Get value of own piece
-            int ownValue = pieceValue(decodeOwnPieceType(move));
+            if (decodeIsPromo(move)) {
+                ownValue = 1;
+            } else {
+                ownValue = pieceValue(decodeOwnPieceType(move));
+            }
             // Get value of enemy piece
             int enemyValue = pieceValue(decodeCapturedPieceType(move));
 
