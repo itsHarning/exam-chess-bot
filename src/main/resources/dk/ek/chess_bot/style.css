@@ -20,6 +20,10 @@
     -fx-background-color: yellow;
 }
 
+.enPassant{
+    -fx-background-color: blue;
+}
+
 .wPawn{
     -fx-background-image: url(../../../pieces/wP.png);
 }

@@ -100,7 +100,7 @@ public class Board {
             -30,-10, 30, 40, 40, 30,-10,-30,        0,0,0,0,0,0,0,0,
             -30,-10, 20, 30, 30, 20,-10,-30,        0,0,0,0,0,0,0,0,
             -30,-30,  0,  0,  0,  0,-30,-30,        0,0,0,0,0,0,0,0,
-            -50,-30,-30,-30,-30,-30,-30,-50,         0,0,0,0,0,0,0,0
+            -50,-30,-10,-30,-30,-30,-10,-50,        0,0,0,0,0,0,0,0
     };
 
     public static int getScore(int[] board, boolean isWhite){
@@ -162,10 +162,7 @@ public class Board {
                     whiteKing = true;
                     score += 20000; //REMEMBER HIGH VALUE FOR THE KING!
                     if(phaseScore > 24) phaseScore = 24;
-                    score += (int) lerp(
-                            getPieceScore(kingEarlyScores, i, true),
-                            getPieceScore(kingLateScores, i, true),
-                            phaseValues[phaseScore]);
+                    score += (int) getPieceScore(kingEarlyScores, i, true);
                     break;
                 case 14:
                     blackKing = true;
@@ -178,18 +175,6 @@ public class Board {
                     break;
 
             }
-        }
-        if (isWhite && !whiteKing){ //Plays as white, White loses
-            return -1000000;
-        }
-        if (isWhite && !blackKing){ //Plays as white, White wins
-            return 1000000;
-        }
-        if (!isWhite && !whiteKing){ //Plays as black, white loses
-            return 1000000;
-        }
-        if (!isWhite && !blackKing){ //Plays as black, white wins
-            return -1000000;
         }
 
         if (isWhite){return score;} //If we are white we want the score as is calculated
@@ -207,8 +192,12 @@ public class Board {
     }
 
     static int getPieceScore(int[] pieceSquareTable, int pos, boolean isWhite){
-        if(isWhite){pos = pos^0b01110111;} //We flip the rank and file of the position, "flipping it" (Simply counting from the back won't work)
+        if(isWhite){pos = mirror(pos);} //We flip the rank and file of the position, "flipping it" (Simply counting from the back won't work)
         return pieceSquareTable[pos];
+    }
+
+    static int mirror(int pos) {
+        return ((7 - (pos >> 4)) << 4) | (pos & 7);
     }
 
     static int[] getFreshBoard(){
@@ -317,4 +306,104 @@ public class Board {
         }
         // System.out.println("###############################");
     }
+    static void printBoardMarked(int[] board, int index){
+        boolean whitespace = true;
+        for (int i = 7; i > -1; i--) {
+            switch (i){
+                case 0:
+                    System.out.print("1");
+                    break;
+                case 1:
+                    System.out.print("2");
+                    break;
+                case 2:
+                    System.out.print("3");
+                    break;
+                case 3:
+                    System.out.print("4");
+                    break;
+                case 4:
+                    System.out.print("5");
+                    break;
+                case 5:
+                    System.out.print("6");
+                    break;
+                case 6:
+                    System.out.print("7");
+                    break;
+                case 7:
+                    System.out.print("8");
+                    break;
+            }
+
+            for (int j = 0; j < 8; j++) {
+                System.out.print("\t");
+                int space = board[(j+(i*16))];
+
+                switch (space){
+                    case 1:
+                        System.out.print("♙");
+                        break;
+                    case 2:
+                        System.out.print("♘");
+                        break;
+                    case 3:
+                        System.out.print("♗");
+                        break;
+                    case 4:
+                        System.out.print("♖");
+                        break;
+                    case 5:
+                        System.out.print("♕");
+                        break;
+                    case 6:
+                        System.out.print("♔");
+                        break;
+                    case 9:
+                        System.out.print("♟");
+                        break;
+                    case 10:
+                        System.out.print("♞");
+                        break;
+                    case 11:
+                        System.out.print("♝");
+                        break;
+                    case 12:
+                        System.out.print("♜");
+                        break;
+                    case 13:
+                        System.out.print("♛");
+                        break;
+                    case 14:
+                        System.out.print("♚");
+                        break;
+                    default:
+                        if((j+(i*16)) == index){
+                            System.out.print("\uD83D\uDFE8");
+                        }
+                        else{
+                            if(whitespace){
+                                System.out.print("⬜");
+                            }else{
+                                System.out.print("⬛");
+                            }
+                        }
+                }
+                whitespace = !whitespace;
+            }
+            System.out.println();
+            whitespace = !whitespace;
+        }
+        System.out.println("###############################");
+    }
+
+    public static void main(String[] args) {
+        int[] board = Board.getFreshBoard();
+
+        board[4] = 0;
+        board[6] = 6;
+
+        System.out.println(getScore(board, true));
+    }
+
 }

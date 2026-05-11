@@ -1,5 +1,9 @@
 package dk.ek.chess_bot.engine;
 
+import dk.ek.chess_bot.engine.Board;
+import dk.ek.chess_bot.engine.IntegerEncoder;
+import dk.ek.chess_bot.engine.ThreatDetector;
+
 import static dk.ek.chess_bot.engine.Pieces.*;
 
 public class MoveController {
@@ -12,9 +16,10 @@ public class MoveController {
     private static final int[] WHITE_PROMOS = {WROOK, WKNIGHT, WBISHOP, WQUEEN};
     private static final int[] BLACK_PROMOS = {BROOK, BKNIGHT, BBISHOP, BQUEEN};
 
-    public static int getMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter){
+    //public static int getMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter){
+    public static int getMoves(boolean isWhite, int pos, int[] board, int[] buffer, int enPassantIndex, int counter){
         return switch (board[pos]) {
-            case 1, 9 -> getPawnMoves(isWhite, pos, board, buffer, counter);
+            case 1, 9 -> getPawnMoves(isWhite, pos, board, buffer, enPassantIndex, counter);
             case 2, 10 -> getNonSlidingMoves(isWhite, pos, board, KNIGHT_MOVES, buffer, counter);
             case 3, 11 -> getAllSlidingMoves(isWhite, pos, board, BISHOP_DIRECTIONS, buffer, counter);
             case 4, 12 -> getAllSlidingMoves(isWhite, pos, board, ROOK_DIRECTIONS, buffer, counter);
@@ -24,7 +29,7 @@ public class MoveController {
         };
     }
 
-    public static int getPawnMoves(boolean isWhite, int pos, int[] board, int[] buffer, int counter) {
+    public static int getPawnMoves(boolean isWhite, int pos, int[] board, int[] buffer, int enPassantIndex, int counter) {
         int piece = board[pos];
         if(isWhite && piece != 1) return counter;
         if(!isWhite && piece != 9) return counter;
@@ -66,14 +71,15 @@ public class MoveController {
         // If promotion, encode move for each promotion piece, where we set piece moving to the promotion piece
         if(isPromo) {
             for (int promoPiece : pawnPromotions(isWhite)) {
-                counter = checkPawnAttacks(attackIndex1, isWhite, board, buffer, counter, pos, promoPiece, true);
-                counter = checkPawnAttacks(attackIndex2, isWhite, board, buffer, counter, pos, promoPiece, true);
+                counter = checkPawnAttacks(attackIndex1, isWhite, board, buffer, counter, pos, promoPiece, true, enPassantIndex);
+                counter = checkPawnAttacks(attackIndex2, isWhite, board, buffer, counter, pos, promoPiece, true, enPassantIndex);
             }
             // Else just check regular attacks
         } else {
-            counter = checkPawnAttacks(attackIndex1, isWhite, board, buffer, counter, pos, piece, false);
-            counter = checkPawnAttacks(attackIndex2, isWhite, board, buffer, counter, pos, piece, false);
+            counter = checkPawnAttacks(attackIndex1, isWhite, board, buffer, counter, pos, piece, false, enPassantIndex);
+            counter = checkPawnAttacks(attackIndex2, isWhite, board, buffer, counter, pos, piece, false, enPassantIndex);
         }
+
 
         return counter;
     }
@@ -84,13 +90,16 @@ public class MoveController {
     }
 
     // Encode pawn attack - for promos, the piece transformed into is encoded as piece moving
-    public static int checkPawnAttacks(int attackIndex, boolean isWhite, int[] board, int [] buffer, int counter, int pos, int piece, boolean isPromo) {
-        if(!isOffBoard(attackIndex) && (isEnemy(isWhite, board[attackIndex]))) {
+    public static int checkPawnAttacks(int attackIndex, boolean isWhite, int[] board, int [] buffer, int counter, int pos, int piece, boolean isPromo, int enPassantIndex) {
+        if(!isOffBoard(attackIndex) && (isEnemy(isWhite, board[attackIndex]))
+                || (attackIndex == enPassantIndex && enPassantIndex != -1)) {
             buffer[counter++] = IntegerEncoder.encodeMove(
                     pos, attackIndex, piece, true, board[attackIndex], isPromo, false
             );
         } return counter;
     }
+
+
 
     public static boolean pawnAtStart(boolean isWhite, int pos) {
         if(isWhite) {return (16 <= pos && pos < 24);}
@@ -202,7 +211,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 4, false)
                             && !ThreatDetector.isSquareThreatened(board, 5, false)
                             && !ThreatDetector.isSquareThreatened(board, 6, false)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 4, 6, WKING, false, 0, false, true
                         );
@@ -217,7 +225,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 4, false)
                             && !ThreatDetector.isSquareThreatened(board, 2, false)
                             && !ThreatDetector.isSquareThreatened(board, 3, false)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 4, 2, WKING, false, 0, false, true
                         );
@@ -232,7 +239,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 116, true)
                             && !ThreatDetector.isSquareThreatened(board, 117, true)
                             && !ThreatDetector.isSquareThreatened(board, 118, true)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 116, 118, BKING, false, 0, false, true
                         );
@@ -247,7 +253,6 @@ public class MoveController {
                     if (!ThreatDetector.isSquareThreatened(board, 116, true)
                             && !ThreatDetector.isSquareThreatened(board, 115, true)
                             && !ThreatDetector.isSquareThreatened(board, 114, true)) {
-
                         moveList[counter++] = IntegerEncoder.encodeMove(
                                 116, 114, BKING, false, 0, false, true
                         );
@@ -267,7 +272,7 @@ public class MoveController {
         int[] buffer = new int [100];
 
 
-        int result = getPawnMoves(false, pawnPos, board,buffer, 0);
+        int result = getPawnMoves(false, pawnPos, board,buffer, -1, 0);
 
         System.out.println("Position: " + pawnPos + ", Pawn moves: " + result);
         for (int i = 0; i < result; i++) {
@@ -359,19 +364,18 @@ public class MoveController {
         }
         */
 
-        /*
         int [] board = new Board().board;
 
         int[] buffer = new int[100];
-        board[81] = 2;
-        board[83] = 2;
+        board[50] = 1;
+        board[18] = 0;
+        board[51] = 9;
         //int amount = getAllSlidingMoves(false, 1, board, BISHOP_DIRECTIONS, buffer, 0);
-        int nonSliding = getPawnMoves(false, 98, board, buffer, 0);
+        int nonSliding = getPawnMoves(false, 51, board, buffer, 34, 0);
 
-        for(int i: buffer){
-            System.out.println(IntegerEncoder.decodeFromSquare(i) + " -> " + IntegerEncoder.decodeToSquare(i));
+        for (int i = 0; i < nonSliding; i++) {
+            System.out.println(IntegerEncoder.decodeFromSquare(buffer[i]) + " -> " + IntegerEncoder.decodeToSquare(buffer[i]));
         }
         System.out.println(IntegerEncoder.decodeToSquare(buffer[1]));
-         */
     }
 }

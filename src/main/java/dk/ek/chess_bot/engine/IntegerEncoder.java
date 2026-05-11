@@ -129,7 +129,7 @@ public class IntegerEncoder {
 
 
     public static void main(String[] args) {
-        int a = encodeMove(7, 23, 1, true, 5, false, false);
+        int a = encodeMove(7, 23, 1, true, 5, false, true);
 
         System.out.println(a);
         System.out.println(Integer.toBinaryString(a));
