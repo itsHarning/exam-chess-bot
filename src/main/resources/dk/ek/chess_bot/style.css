@@ -24,6 +24,14 @@
     -fx-background-color: blue;
 }
 
+.gameOver{
+    -fx-background-color: black;
+}
+
+.bigDub{
+    -fx-background-color: green;
+}
+
 .wPawn{
     -fx-background-image: url(../../../pieces/wP.png);
 }

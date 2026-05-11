@@ -10,6 +10,8 @@ public class GameState {
     private int enPassantIndex;
     private int totalMoves;
     private int halfMoveClock;
+    private boolean isWon;
+    private boolean isLoss;
 
     public GameState(){
         this.board = Board.getFreshBoard();
@@ -21,6 +23,24 @@ public class GameState {
         this.enPassantIndex = -1;
         this.totalMoves = 0;
         this.halfMoveClock = 0;
+        this.isWon = false;
+        this.isLoss = false;
+    }
+
+    public boolean isWon() {
+        return isWon;
+    }
+
+    public void setWon(boolean won) {
+        isWon = won;
+    }
+
+    public boolean isLoss() {
+        return isLoss;
+    }
+
+    public void setLoss(boolean loss) {
+        isLoss = loss;
     }
 
     public int[] getCurrentBoard() {

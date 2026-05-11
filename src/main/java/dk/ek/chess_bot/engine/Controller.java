@@ -454,6 +454,12 @@ public class Controller implements Initializable {
                 if (enPassantCoordinates[0] == j && 7-enPassantCoordinates[1] == i){
                     pane.getStyleClass().add("enPassant");
                 }
+                if(gameState.isLoss()){
+                    pane.getStyleClass().add("gameOver");
+                }
+                if(gameState.isWon()){
+                    pane.getStyleClass().add("bigDub");
+                }
             }
         }
     }

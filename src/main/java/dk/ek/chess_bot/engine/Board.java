@@ -103,9 +103,17 @@ public class Board {
             -50,-30,-10,-30,-30,-30,-10,-50,        0,0,0,0,0,0,0,0
     };
 
-    public static int getScore(int[] board, boolean isWhite){
+    public static int getScore(int[] board){
         int score = 0;
         int phaseScore = 0; //Here we add the value of non pawn/king pieces to interpolate between early/mid/late game.
+        // FIRST PASS: Calculate total phase score
+        for (int i = 0; i < 128; i++) {
+            if ((i & 0x88) != 0) continue; // If using 0x88, skip invalid squares
+            int piece = board[i];
+            if (piece == 2 || piece == 10 || piece == 3 || piece == 11) phaseScore += 1; // Knights/Bishops
+            else if (piece == 4 || piece == 12) phaseScore += 2; // Rooks
+            else if (piece == 5 || piece == 13) phaseScore += 4; // Queens
+        }
         boolean whiteKing = false;
         boolean blackKing = false;
         for (int i = 0; i < 128; i++) {
@@ -120,49 +128,44 @@ public class Board {
                     break;
                 case 2:
                     score += 300;
-                    phaseScore += 1;
                     score += getPieceScore(knightScores, i, true);
                     break;
                 case 10:
                     score -= 300;
-                    phaseScore += 1;
                     score -= getPieceScore(knightScores, i, false);
                     break;
                 case 3:
                     score += 300;
-                    phaseScore += 1;
                     score += getPieceScore(bishopScores, i, true);
                     break;
                 case 11:
                     score -= 300;
-                    phaseScore += 1;
                     score -= getPieceScore(bishopScores, i, false);
                     break;
                 case 4:
                     score += 500;
-                    phaseScore += 2;
                     score += getPieceScore(rookScores, i, true);
                     break;
                 case 12:
                     score -= 500;
-                    phaseScore += 2;
                     score -= getPieceScore(rookScores, i, false);
                     break;
                 case 5:
                     score += 900;
-                    phaseScore += 4;
                     //We don't need a queen square table. She is so strong she is good everywhere! and her high base value makes boosting for position less relevant.
                     break;
                 case 13:
                     score -= 900;
-                    phaseScore += 4;
                     //We don't need a queen square table. She is so strong she is good everywhere! and her high base value makes boosting for position less relevant.
                     break;
                 case 6:
                     whiteKing = true;
                     score += 20000; //REMEMBER HIGH VALUE FOR THE KING!
                     if(phaseScore > 24) phaseScore = 24;
-                    score += (int) getPieceScore(kingEarlyScores, i, true);
+                    score += (int) lerp(
+                            getPieceScore(kingEarlyScores, i, true),
+                            getPieceScore(kingLateScores, i, true),
+                            phaseValues[phaseScore]);
                     break;
                 case 14:
                     blackKing = true;
@@ -177,8 +180,7 @@ public class Board {
             }
         }
 
-        if (isWhite){return score;} //If we are white we want the score as is calculated
-        else{return -score;} //If we are black we want the inverse
+        return score; //Always returns a positive score for white and a negative score for black
     }
 
     static final int[] phaseValues = new int[] {0, 4, 8, 12, 17, 21, 25, 29, 33, 37, 42, 46, 50, 54, 58, 62, 67, 71, 75, 79, 83, 88, 92, 96, 100};
@@ -403,7 +405,7 @@ public class Board {
         board[4] = 0;
         board[6] = 6;
 
-        System.out.println(getScore(board, true));
+        System.out.println(getScore(board));
     }
 
 }
