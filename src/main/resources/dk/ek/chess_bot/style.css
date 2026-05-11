@@ -13,7 +13,7 @@
 }
 
 .clicked{
-    -fx-background-color: red;
+    -fx-background-color: #dc3333;
 }
 
 .target{
@@ -21,7 +21,7 @@
 }
 
 .enPassant{
-    -fx-background-color: blue;
+    -fx-background-color: #432c22;
 }
 
 .gameOver{
@@ -30,6 +30,14 @@
 
 .bigDub{
     -fx-background-color: green;
+}
+
+.from{
+    -fx-background-color: #ff5473;
+}
+
+.to{
+    -fx-background-color: #d81d3d;
 }
 
 .wPawn{

@@ -12,6 +12,8 @@ public class GameState {
     private int halfMoveClock;
     private boolean isWon;
     private boolean isLoss;
+    private int moveFrom;
+    private int moveTo;
 
     public GameState(){
         this.board = Board.getFreshBoard();
@@ -25,6 +27,8 @@ public class GameState {
         this.halfMoveClock = 0;
         this.isWon = false;
         this.isLoss = false;
+        this.moveFrom = 0;
+        this.moveTo = 0;
     }
 
     public boolean isWon() {
@@ -113,5 +117,21 @@ public class GameState {
 
     public void setHalfMoveClock(int halfMoveClock) {
         this.halfMoveClock = halfMoveClock;
+    }
+
+    public int getMoveFrom() {
+        return moveFrom;
+    }
+
+    public void setMoveFrom(int moveFrom) {
+        this.moveFrom = moveFrom;
+    }
+
+    public int getMoveTo() {
+        return moveTo;
+    }
+
+    public void setMoveTo(int moveTo) {
+        this.moveTo = moveTo;
     }
 }

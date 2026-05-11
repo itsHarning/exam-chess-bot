@@ -14,6 +14,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
 
@@ -103,7 +104,7 @@ public class Controller implements Initializable {
             System.out.println("No input in field");
         }
         gameState.setEnPassantIndex(enPassantInput);
-        gameState = Bot.getNextMove(gameState, 15_000);
+        gameState = Bot.getNextMove(gameState, 5_000);
         FEN = Translator.gameStateToFEN(gameState);
         history.add(FEN);
         fenField.setText(FEN);
@@ -111,6 +112,10 @@ public class Controller implements Initializable {
         swapTurn();
 
         renderBoard();
+
+        // colours the move that was just made
+        panes[7 - convertFrom0x88(gameState.getMoveFrom())[1]][convertFrom0x88(gameState.getMoveFrom())[0]].getStyleClass().add("from");
+        panes[7 - convertFrom0x88(gameState.getMoveTo())[1]][convertFrom0x88(gameState.getMoveTo())[0]].getStyleClass().add("to");
     }
 
 	@FXML
@@ -244,7 +249,7 @@ public class Controller implements Initializable {
                         return;
                     }
 
-                    if (clickedPane == null){
+                    if (clickedPane == null) {
                         System.out.println("You clicked a pane");
                         clickedPiece = board[convertTo0x88(finalI, finalJ)];
                         if(clickedPiece != 0){
@@ -252,7 +257,7 @@ public class Controller implements Initializable {
                             fromIndex = convertTo0x88(finalI, finalJ);
                             clickedPane = pane;
                             int[] moves = new int[64];
-                            int counter = MoveController.getMoves(this.gameState.isWhiteToMove(), square, board, moves,gameState.getEnPassantIndex(), 0);
+                            int counter = MoveController.getMoves(this.gameState.isWhiteToMove(), square, board, moves, gameState.getEnPassantIndex(), 0);
 
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));

@@ -31,7 +31,7 @@ public class Bot {
     private static long estimatedNotesCutoff = 0;
 
     private static Instant endTime;
-    static boolean ordering=true;
+    static boolean ordering = true;
 
     static int[] pv = new int[64];
     static int[] currentPath = new int[64];
@@ -160,7 +160,9 @@ public class Bot {
         System.out.println("Final depth reached: " + finalDepth);
         System.out.println("score before: " + Board.getScore(currentBoard));
 
-        if(!gameState.isLoss()) makeMove(bestMoveFoundInPrevious);
+        if (!gameState.isLoss()) makeMove(bestMoveFoundInPrevious);
+        newGameState.setMoveFrom(IntegerEncoder.decodeFromSquare(bestMoveFoundInPrevious));
+        newGameState.setMoveTo(IntegerEncoder.decodeToSquare(bestMoveFoundInPrevious));
 
         System.out.println(" Score after: " + Board.getScore(currentBoard));
         DecimalFormat numberFormatter = new DecimalFormat("#,###");
@@ -171,9 +173,9 @@ public class Bot {
         long timeTaken = ChronoUnit.MILLIS.between(start, Instant.now());
         String formattedEstimatedNodesSearched = numberFormatter.format(estimatedNotesCutoff).replace(",", ".");
         System.out.println("Cut off: " + timesCutoff + " times. Having pruned an estimated: " + formattedEstimatedNodesSearched + " nodes");
-        double ebf = Math.pow(nodesSearched, 1.0/finalDepth);
+        double ebf = Math.pow(nodesSearched, 1.0 / finalDepth);
         System.out.println("Effective branching factor: " + ebf);
-        double nps = nodesSearched/(depthTime/1000.0);
+        double nps = nodesSearched / (depthTime / 1000.0);
         String formattedNps = numberFormatter.format(nps).replace(",", ".");
         System.out.println("Nodes per second: " + formattedNps);
 
@@ -240,7 +242,7 @@ public class Bot {
 
 
         //STEP 5.2: If we are moving a pawn two spaces, we need to set en passant square
-        enPassantHistory[historyIndex] = -1; //By default we set it to -1, meaning no en passant
+        enPassantHistory[historyIndex] = -1; //By default, we set it to -1, meaning no en passant
         if(pieceType == 1 || pieceType == 9){
             if (toSquare-fromSquare == 32){ //A white pawn moved two squares forward
                 enPassantHistory[historyIndex]=toSquare-16;
