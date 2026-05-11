@@ -180,6 +180,10 @@ public class Bot {
         newGameState.setWhiteToMove(isWhiteToMove);
         newGameState.setCurrentBoard(currentBoard);
         newGameState.setEnPassantIndex(enPassantHistory[historyIndex]);
+        newGameState.setWhiteCastleKingSide(castlingHistory[historyIndex][0]);
+        newGameState.setWhiteCastleQueenSide(castlingHistory[historyIndex][1]);
+        newGameState.setBlackCastleKingSide(castlingHistory[historyIndex][2]);
+        newGameState.setBlackCastleKingSide(castlingHistory[historyIndex][3]);
         if (isCheckMate()) newGameState.setWon(true);
         if (gameState.isLoss()) newGameState.setLoss(true);
         System.out.println("FEN STRING: " + Translator.gameStateToFEN(newGameState));
