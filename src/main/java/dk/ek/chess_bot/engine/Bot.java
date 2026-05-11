@@ -229,26 +229,15 @@ public class Bot {
 
         //STEP 3: Normal move from one square to the other. Often this is all
         currentBoard[fromSquare] = 0;
+        if (IntegerEncoder.decodeIsPromo(move)){
+            System.out.println("This move was a promotion making: " + pieceType);
+        }
         currentBoard[toSquare] = pieceType;
 
         //STEP 4: Capture
         //Now, if this was a capture, the capture is implicit. If there was an enemy in the "toSquare", it is now overwritten. This is not so for the unmake function.
         //No need for specific capture logic here
 
-        //STEP 5 - SPECIFIC PAWN LOGIC
-        //STEP 5.1: What if it is a promotion?
-        if(IntegerEncoder.decodeIsPromo(move)){
-            currentBoard[toSquare] = IntegerEncoder.decodeCapturedPieceType(move); //If it is a promotion, we use the captured piecetype bits to indicate what the promotion should be
-
-            if(IntegerEncoder.decodeIsCapture(move)){ //Technically a move can be both a capture and a promotion, in that case, we just make a queen
-                if(isWhiteToMove){
-                    currentBoard[toSquare] = 5; //If it is both a capture and a promo, we just make a queen
-                }
-                else{
-                    currentBoard[toSquare] = 13; //Vice versa if we are black
-                }
-            }
-        }
 
         //STEP 5.2: If we are moving a pawn two spaces, we need to set en passant square
         enPassantHistory[historyIndex] = -1; //By default we set it to -1, meaning no en passant
