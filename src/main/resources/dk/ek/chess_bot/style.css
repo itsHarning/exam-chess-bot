@@ -13,7 +13,7 @@
 }
 
 .clicked{
-    -fx-background-color: #dc3333;
+    -fx-background-color: #824e9c;
 }
 
 .target{
@@ -21,7 +21,7 @@
 }
 
 .enPassant{
-    -fx-background-color: #432c22;
+    -fx-background-color: #1c4a9c;
 }
 
 .gameOver{
