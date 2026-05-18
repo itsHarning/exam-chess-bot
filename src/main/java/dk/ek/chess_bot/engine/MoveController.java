@@ -274,108 +274,15 @@ public class MoveController {
 
         int result = getPawnMoves(false, pawnPos, board,buffer, -1, 0);
 
-        System.out.println("Position: " + pawnPos + ", Pawn moves: " + result);
+//        System.out.println("Position: " + pawnPos + ", Pawn moves: " + result);
         for (int i = 0; i < result; i++) {
             int move = buffer[i];
-            System.out.println(IntegerEncoder.decodeFromSquare(move) + " -> "
-                    + IntegerEncoder.decodeToSquare(move)
-                    + ", PROMO:" + IntegerEncoder.decodeIsPromo(move)
-                    + ", NEW PIECE: " + IntegerEncoder.decodeOwnPieceType(move)
-                    + ", MOVE SCORE: " + IntegerEncoder.decodeScore(move));
+//            System.out.println(IntegerEncoder.decodeFromSquare(move) + " -> "
+//                    + IntegerEncoder.decodeToSquare(move)
+//                    + ", PROMO:" + IntegerEncoder.decodeIsPromo(move)
+//                    + ", NEW PIECE: " + IntegerEncoder.decodeOwnPieceType(move)
+//                    + ", MOVE SCORE: " + IntegerEncoder.decodeScore(move));
         }
-        System.out.println();
-    }
-
-
-    public static void main(String[] args) {
-
-        MoveController m = new MoveController();
-        m.testIsPromo(17);
-        m.testIsPromo(16);
-        m.testIsPromo(33);
-        m.testIsPromo(49);
-
-        /* [TESTING]
-        // TEST 1: White king side
-        int[] board1 = new int[128];
-        board1[4] = WKING;
-        board1[7] = WROOK;
-        board1[36] = BBISHOP;
-
-        int[] buffer1 = new int[100];
-
-        int result1 = getCastling(true, board1, buffer1, true, false, false, false, 0);
-
-        System.out.println("White king side counter: " + result1);
-        for (int i = 0; i < result1; i++) {
-            System.out.println(IntegerEncoder.decodeFromSquare(buffer1[i]) + " -> " +
-                    IntegerEncoder.decodeToSquare(buffer1[i]));
-        }
-
-
-        // TEST 2: White queen side
-        int[] board2 = new int[128];
-        board2[4] = WKING;
-        board2[0] = WROOK;
-        board2[36] = BBISHOP;
-
-        int[] buffer2 = new int[100];
-
-        int result2 = getCastling(true, board2, buffer2, false, true, false, false, 0);
-
-        System.out.println("White queen side counter: " + result2);
-        for (int i = 0; i < result2; i++) {
-            System.out.println(IntegerEncoder.decodeFromSquare(buffer2[i]) + " -> " +
-                    IntegerEncoder.decodeToSquare(buffer2[i]));
-        }
-
-
-        // TEST 3: Black king side
-        int[] board3 = new int[128];
-        board3[116] = BKING;
-        board3[119] = BROOK;
-        board3[84] = WBISHOP;
-
-        int[] buffer3 = new int[100];
-
-        int result3 = getCastling(false, board3, buffer3, false, false, true, false, 0);
-
-        System.out.println("Black king side counter: " + result3);
-        for (int i = 0; i < result3; i++) {
-            System.out.println(IntegerEncoder.decodeFromSquare(buffer3[i]) + " -> " +
-                    IntegerEncoder.decodeToSquare(buffer3[i]));
-        }
-
-
-        // TEST 4: Black queen side
-        int[] board4 = new int[128];
-        board4[116] = BKING;
-        board4[112] = BROOK;
-
-
-        int[] buffer4 = new int[100];
-
-        int result4 = getCastling(false, board4, buffer4, false, false, false, true, 0);
-
-        System.out.println("Black queen side counter: " + result4);
-        for (int i = 0; i < result4; i++) {
-            System.out.println(IntegerEncoder.decodeFromSquare(buffer4[i]) + " -> " +
-                    IntegerEncoder.decodeToSquare(buffer4[i]));
-        }
-        */
-
-        int [] board = new Board().board;
-
-        int[] buffer = new int[100];
-        board[50] = 1;
-        board[18] = 0;
-        board[51] = 9;
-        //int amount = getAllSlidingMoves(false, 1, board, BISHOP_DIRECTIONS, buffer, 0);
-        int nonSliding = getPawnMoves(false, 51, board, buffer, 34, 0);
-
-        for (int i = 0; i < nonSliding; i++) {
-            System.out.println(IntegerEncoder.decodeFromSquare(buffer[i]) + " -> " + IntegerEncoder.decodeToSquare(buffer[i]));
-        }
-        System.out.println(IntegerEncoder.decodeToSquare(buffer[1]));
+//        System.out.println();
     }
 }

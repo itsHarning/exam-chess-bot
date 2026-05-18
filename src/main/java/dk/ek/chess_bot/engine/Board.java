@@ -398,14 +398,4 @@ public class Board {
         }
         System.out.println("###############################");
     }
-
-    public static void main(String[] args) {
-        int[] board = Board.getFreshBoard();
-
-        board[4] = 0;
-        board[6] = 6;
-
-        System.out.println(getScore(board));
-    }
-
 }

@@ -66,9 +66,9 @@ public class Bot {
 
         //Step 1: Iterative depth. We start at depth 1, then we go deeper every time we complete a full search.
         for (int depth = 1; depth <= max_depth; depth++) {
-            System.out.println("Starting depth: " + depth);
+//            System.out.println("Starting depth: " + depth);
             if (!Instant.now().isBefore(endTime)) { //We must see if we are out of time
-                System.out.println("Out of time!");
+//                System.out.println("Out of time!");
                 break;
             }
 
@@ -132,13 +132,13 @@ public class Bot {
             }
 
             if(!validMoves){
-                System.out.println("There were no valid moves for this position");
+//                System.out.println("There were no valid moves for this position");
                 gameState.setLoss(true); //If we had no moves, the game is lost for us
             }
 
             //Step 6: Make sure we still have time
             if (Instant.now().isAfter(endTime)) {
-                System.out.println("Out of time!");
+//                System.out.println("Out of time!");
                 break; //If we had run out of time previously, we want to break the loop before setting bad moves
             }
 
@@ -146,17 +146,19 @@ public class Bot {
             bestMoveFoundInPrevious = bestMoveFound; //If we reach this, we fully searched at the depth, meaning we update the previously best move
             finalDepth = depth;
             depthTime = ChronoUnit.MILLIS.between(start, Instant.now());
-            System.out.println("Finished depth: " + depth + ", it took " + depthTime + "ms");
-            System.out.print("PV: ");
+//            System.out.println("Finished depth: " + depth + ", it took " + depthTime + "ms");
+//            System.out.print("PV: ");
             for (int i = 0; i < depth; i++) {
                 if (pv[i] == 0) break;
-                System.out.print(convertIndexToCoordinates(IntegerEncoder.decodeFromSquare(pv[i]))
-                        + "->" + convertIndexToCoordinates(IntegerEncoder.decodeToSquare(pv[i])) + " ");
+//                System.out.print(convertIndexToCoordinates(IntegerEncoder.decodeFromSquare(pv[i]))
+//                        + "->" + convertIndexToCoordinates(IntegerEncoder.decodeToSquare(pv[i])) + " ");
             }
         }
 
         System.out.println();
-        System.out.println("--------------------MOVE REPORT-----------------------");
+        if (botIsWhite) totalMoves++;
+        newGameState.setTotalMoves(totalMoves);
+        System.out.println("--------------------MOVE " + totalMoves + " REPORT-----------------------");
         System.out.println("Final depth reached: " + finalDepth);
         System.out.println("score before: " + Board.getScore(currentBoard));
 
@@ -214,7 +216,7 @@ public class Bot {
             }
             unMakeMove(buffer[i]);
         }
-        System.out.println("The opposition has " + validMovesAvailable + " valid moves available");
+//        System.out.println("The opposition has " + validMovesAvailable + " valid moves available");
         return !validMoves;
     }
 
@@ -232,7 +234,7 @@ public class Bot {
         //STEP 3: Normal move from one square to the other. Often this is all
         currentBoard[fromSquare] = 0;
         if (IntegerEncoder.decodeIsPromo(move)){
-            System.out.println("This move was a promotion making: " + pieceType);
+//            System.out.println("This move was a promotion making: " + pieceType);
         }
         currentBoard[toSquare] = pieceType;
 
@@ -651,7 +653,7 @@ public class Bot {
 
         //Step 1: Iterative depth. We start at depth 1, then we go deeper every time we complete a full search.
         for (int depth = 1; depth <= max_depth; depth++) {
-            System.out.println("Starting depth: " + depth);
+//            System.out.println("Starting depth: " + depth);
 
             //Step 2: Purge info from previous searches
             historyIndex = 0;
@@ -689,7 +691,7 @@ public class Bot {
             }
 
             movesFoundAtEach[depth] = movesFound;
-            System.out.println(movesFound);
+//            System.out.println(movesFound);
         }
 
         System.out.println();

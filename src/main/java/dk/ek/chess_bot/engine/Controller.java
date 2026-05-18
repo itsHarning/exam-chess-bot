@@ -71,7 +71,7 @@ public class Controller implements Initializable {
 	}
 
     public void swapTurn(){
-        System.out.println("Swapping the turn!");
+//        System.out.println("Swapping the turn!");
         if (gameState.isWhiteToMove()){
             whiteTurn.setSelected(true);
             blackTurn.setSelected(false);
@@ -83,7 +83,7 @@ public class Controller implements Initializable {
 
 	@FXML
 	public void FENToBoard() {
-		System.out.println(fenField.getText());
+//		System.out.println(fenField.getText());
 		String fenString = fenField.getText();
 
 		// Example fen string
@@ -99,12 +99,12 @@ public class Controller implements Initializable {
         int enPassantInput = -1;
         try {
             enPassantInput = Integer.parseInt(enPassantField.getText());
-            System.out.println("En passant index set as: " + enPassantInput);
+//            System.out.println("En passant index set as: " + enPassantInput);
         } catch (Exception e){
             System.out.println("No input in field");
         }
         gameState.setEnPassantIndex(enPassantInput);
-        gameState = Bot.getNextMove(gameState, 5_000);
+        gameState = Bot.getNextMove(gameState, 15_000);
         FEN = Translator.gameStateToFEN(gameState);
         history.add(FEN);
         fenField.setText(FEN);
@@ -122,7 +122,7 @@ public class Controller implements Initializable {
 	public void boardToFEN() {
         Board.printBoard(gameState.getCurrentBoard());
 
-		System.out.println(Translator.gameStateToFEN(gameState));
+//		System.out.println(Translator.gameStateToFEN(gameState));
 	}
 
 	@Override
@@ -142,7 +142,7 @@ public class Controller implements Initializable {
             @Override
             public void changed(ObservableValue<? extends String> selected, String oldPiece, String newPiece) {
                 selectedPiece = newPiece != null ? newPiece : selectedPiece;
-                System.out.println(selectedPiece);
+//                System.out.println(selectedPiece);
             }
         });
 
@@ -224,7 +224,7 @@ public class Controller implements Initializable {
                 int finalJ = j;
                 pane.setOnMousePressed((MouseEvent event) -> {
                     if (!selectedPiece.equals("play")) {
-                        System.out.println(selectedPiece);
+//                        System.out.println(selectedPiece);
                         switch (selectedPiece) {
                             case "pawn" -> clickedPiece = 1;
                             case "knight" -> clickedPiece = 2;
@@ -250,10 +250,10 @@ public class Controller implements Initializable {
                     }
 
                     if (clickedPane == null) {
-                        System.out.println("You clicked a pane");
+//                        System.out.println("You clicked a pane");
                         clickedPiece = board[convertTo0x88(finalI, finalJ)];
                         if(clickedPiece != 0){
-                            System.out.println("You clicked a piece");
+//                            System.out.println("You clicked a piece");
                             fromIndex = convertTo0x88(finalI, finalJ);
                             clickedPane = pane;
                             int[] moves = new int[64];
@@ -261,15 +261,15 @@ public class Controller implements Initializable {
 
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
-                                System.out.println("Found moves");
-                                System.out.println((targetXY[0] + 1 ) + ", " + (targetXY[1] + 1));
+//                                System.out.println("Found moves");
+//                                System.out.println((targetXY[0] + 1 ) + ", " + (targetXY[1] + 1));
                                 panes[7 - targetXY[1]][targetXY[0]].getStyleClass().add("target");
                             }
 
                             clickedPane.getStyleClass().add("clicked");
                         }
                     } else {
-                        System.out.println("You clicked away from a pane");
+//                        System.out.println("You clicked away from a pane");
                         clickedPane.getStyleClass().remove("clicked");
 
                         board[convertTo0x88(finalI,finalJ)] = clickedPiece;
@@ -322,8 +322,8 @@ public class Controller implements Initializable {
 
                             for (int k = 0; k < counter; k++) {
                                 int[] targetXY = convertFrom0x88(IntegerEncoder.decodeToSquare(moves[k]));
-                                System.out.println("Found moves");
-                                System.out.println(targetXY[0] + ", " + targetXY[1]);
+//                                System.out.println("Found moves");
+//                                System.out.println(targetXY[0] + ", " + targetXY[1]);
                                 panes[7-targetXY[1]][targetXY[0]].setStyle("-fx-stroke: #FF0000; -fx-stroke-width: 5");
                             }
 
@@ -341,13 +341,13 @@ public class Controller implements Initializable {
 							paneToMove = pane;
 							from = square;
 
-							System.out.println("from " + from);
-							System.out.println("piece type " + board[to]);
+//							System.out.println("from " + from);
+//							System.out.println("piece type " + board[to]);
 
 						} else {
 							to = square;
 
-							System.out.println("to " + to);
+//							System.out.println("to " + to);
 
 							board[to] = board[from]; // set the piece in its new location
 							board[from] = 0; // sets the place where piece was to empty
@@ -376,7 +376,7 @@ public class Controller implements Initializable {
 
     @FXML
     public void revertGameState(){
-        System.out.println("Reverting game state");
+//        System.out.println("Reverting game state");
         if (historyPointer>0) {
             historyPointer--;
             FEN = history.get(historyPointer);
@@ -395,17 +395,17 @@ public class Controller implements Initializable {
             }
         }
         else {
-            System.out.println("You have reached the beginning of the history.");
+//            System.out.println("You have reached the beginning of the history.");
         }
     }
 
     @FXML
     public void renderBoard(){
-        System.out.println("Rendering board");
+//        System.out.println("Rendering board");
         int[] enPassantCoordinates = new int[] {-1,-1};
         if(gameState.getEnPassantIndex() != -1){
             enPassantCoordinates = convertFrom0x88(gameState.getEnPassantIndex());
-            System.out.println(enPassantCoordinates[0] + ", " + enPassantCoordinates[1]);
+//            System.out.println(enPassantCoordinates[0] + ", " + enPassantCoordinates[1]);
         }
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {

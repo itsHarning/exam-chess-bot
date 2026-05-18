@@ -132,23 +132,4 @@ public class IntegerEncoder {
 
         return "From: " + fromSquare + " - To: " + toSquare + " - Piece: " + pieceType + " - Capture? " + capture;
     }
-
-
-
-    public static void main(String[] args) {
-        int a = encodeMove(7, 23, 1, true, 5, false, true);
-
-        System.out.println(a);
-        System.out.println(Integer.toBinaryString(a));
-
-
-        System.out.println(decodeFromSquare(a));
-        System.out.println(decodeToSquare(a));
-        System.out.println(decodeOwnPieceType(a));
-        System.out.println(decodeIsCapture(a));
-        System.out.println(decodeIsPromo(a));
-        System.out.println(decodeIsCastle(a));
-        System.out.println(decodeCapturedPieceType(a));
-        System.out.println(decodeScore(a));
-    }
 }
